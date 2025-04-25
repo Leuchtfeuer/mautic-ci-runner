@@ -1,0 +1,180 @@
+name: 'Anthropic Code Review'
+description: 'Code review with claude.ai between to merge commits'
+inputs:
+  ANTHROPIC_API_KEY:
+    required: true
+    description: 'Anthropic API key'
+  anthropicModel:
+    required: false
+    description: 'Used Anthropic LLM Model'
+    default: 'claude-3-7-sonnet-20250219'
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get git diff
+      id: git-diff
+      shell: bash
+      run: |
+        echo "Getting diff between $(git log --merges -n 2 --pretty=format:"%H" | tail -n 1) and $(git log --merges -n 1 --pretty=format:"%H")"
+        git diff $(git log --merges -n 2 --pretty=format:"%H" | tail -n 1) $(git log --merges -n 1 --pretty=format:"%H") > diff.txt
+        git diff $(git log --merges -n 2 --pretty=format:"%H" | tail -n 1) $(git log --merges -n 1 --pretty=format:"%H") 
+        echo "Diff size: $(wc -l < diff.txt) lines"
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests PyGithub
+
+    - name: Send to Anthropic API
+      id: anthropic
+      shell: bash
+      run: |
+        cat << 'EOL' > review_script.py
+        import os
+        import json
+        import requests
+        from github import Github
+        import sys
+        
+        # Read the diff content
+        def create_review_prompt(diff_content):
+          return f"""You are a master engineer tasked with reviewing a pull request based on a git diff. Your goal is to provide a quick and simple code review focusing on critical aspects, potential bugs, performance issues, and maintainability. 
+        
+            Here's the git diff you need to analyze:
+            {diff_content}
+        
+            Follow these steps to conduct your code review:
+            1. Carefully examine the git diff provided above. Make sure you focus on only changed code. Remember that the diff may contain multiple files and changes, the sign "-" indicates code that was removed, and the sign "+" indicates code that was added.
+        
+            2. Analyze the changes with a focus on the following aspects:
+               a. Potential bugs or logical errors
+               b. Performance issues or inefficiencies
+               c. Code maintainability and readability
+               d. Adherence to best practices and coding standards
+               e. Security concerns
+               f. Scalability issues
+        
+            3. For each significant issue or observation, provide:
+               a. A brief description of the issue
+               b. The location in the code (file name and line number, if applicable)
+               c. An explanation of why it's problematic
+               d. A suggested improvement or solution
+        
+            4. Prioritize your comments, focusing on the most critical issues first.
+        
+            5. Do not review or comment about good changes, only bad changes, improvements, or suggestions.
+        
+            6. Present your code review in the following markdown format:
+            ## AI Code Review
+        
+            ## AI Code Review
+        
+            ### Summary:
+            [Provide a brief summary paragraph of the code changes]
+        
+            ### 🟢/🟡/🟠/🔴 Grade:
+            #### 90-100: Excellent - Code meets high standards, with room for optional enhancements, or perfect. 80-90: Very Good - Code meets high standards with small improvements needed. 70-80: Ok - But minor improvements needed. 40-69: Needs Work - Significant issues to address. 0-39: Critical - Major problems require immediate attention
+        
+            ### 🎯 Conclusion:
+            [Offer a short conclusion about whether the pull request is ready to be merged or needs further work]
+        
+            ### ⚠️ Issues:
+            [List the most important issues identified, that should be fixed, organized by file. if any]
+        
+            ### 💡 Suggestions:
+            [Provide your review of improvement suggestions or nice to have fixes, organized by file. if any]"""
+        
+        try:
+          # Read the diff content
+          with open('diff.txt', 'r', encoding='utf-8') as f:
+            diff_content = f.read().strip()
+        
+          if not diff_content:
+            raise ValueError("No diff content found")
+        
+          # Generate the review prompt
+          prompt = create_review_prompt(diff_content)
+        
+          # Make Anthropic API request
+          headers = {
+            "x-api-key": os.environ["ANTHROPIC_API_KEY"],
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+          }
+        
+          data = {
+            "model": os.environ["ANTHROPIC_LLM_MODEL"],
+            "max_tokens": 8192,
+            "messages": [
+              {"role": "user", "content": prompt}
+            ]
+          }
+        
+          print("Sending request to Anthropic API...")
+        
+          response = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers=headers,
+            json=data,
+            timeout=30
+          )
+        
+          response.raise_for_status()
+        
+          # Extract review content
+          try:
+            review_content = response.json()["content"][0]["text"]
+          except (KeyError, IndexError) as e:
+            print(f"Error parsing API response: {e}")
+            print(f"Raw response: {response.text}")
+            raise
+        
+          print("Posting review comment...")
+          print(review_content)
+          print("Review posted successfully!")
+        
+          if review_content:
+            with open('review_results.txt', 'w') as f:
+              f.write(str(review_content))
+          exit(0)
+        
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+        EOL
+        
+        python review_script.py
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.ANTHROPIC_API_KEY }}
+        ANTHROPIC_LLM_MODEL: ${{ inputs.anthropicModel }}
+
+
+    - name: Check if result file exists
+      shell: bash
+      id: check_file
+      run: |
+        if [ -f "{{review_results.txt}}" ]; then
+          echo "::set-output name=file_exists::true"
+          echo "::notice title={AI Review}::{The result of the AI review can be found in the artifacts}
+        else
+          echo "::set-output name=file_exists::false"
+          echo "::notice title={AI Review}::{There is no return from the AI review}
+        fi
+
+    - name: Upload artifact
+      if: steps.check_file.outputs.file_exists == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ai-review-results
+        path: review_results.txt

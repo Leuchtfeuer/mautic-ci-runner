@@ -1,0 +1,24 @@
+name: AI powered Code Review for PRs
+on:
+  pull_request:
+
+jobs:
+  ai-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required secrets
+        run: |
+          if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "Error: ANTHROPIC_API_KEY secret is not configured"
+            exit 1
+          fi
+
+      - uses: presubmit/ai-reviewer@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LLM_MODEL: "claude-3-5-sonnet-20241022"
