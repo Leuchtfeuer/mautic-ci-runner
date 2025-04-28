@@ -1,6 +1,7 @@
 name: AI powered Code Review for PRs
 on:
   pull_request:
+  workflow_call:
 
 jobs:
   ai-review:
