@@ -1,6 +1,10 @@
 name: AI powered Code Review for PRs
 on:
   workflow_call:
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+        description: 'Antropic API key'
 
 jobs:
   ai-review:
