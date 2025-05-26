@@ -21,4 +21,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
         LLM_API_KEY: ${{ inputs.LLM_API_KEY }}
-        LLM_MODEL: ${{ inputs.ANTHROPIC_MODEL }}
+        LLM_MODEL: ${{ inputs.LLM_MODEL }}
