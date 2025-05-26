@@ -20,5 +20,5 @@ runs:
     - uses: presubmit/ai-reviewer@latest
       env:
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-        LLM_API_KEY: ${{ inputs.ANTHROPIC_API_KEY }}
+        LLM_API_KEY: ${{ inputs.LLM_API_KEY }}
         LLM_MODEL: ${{ inputs.ANTHROPIC_MODEL }}
