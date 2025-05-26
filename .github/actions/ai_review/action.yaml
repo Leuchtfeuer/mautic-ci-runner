@@ -1,16 +1,21 @@
 name: 'Anthropic Code Review'
 description: 'Code review with claude.ai between to merge commits'
 inputs:
-  anthropic_api_key:
+  LLM_API_KEY:
     required: true
     description: 'Anthropic API key'
-  github_token:
+  GITHUB_TOKEN:
     required: true
     description: 'Github Access Token'
+  LLM_MODEL:
+    required: false
+    description: 'Used Anthropic LLM Model'
+    default: 'claude-3-7-sonnet-20250219'
 runs:
   using: "composite"
   steps:
-    - uses: anthropics/claude-code-action@beta
+    - uses: presubmit/ai-reviewer@latest
       env:
-        github_token: ${{ inputs.github_token }}
-        anthropic_api_key: ${{ inputs.anthropic_api_key }}
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        LLM_API_KEY: ${{ inputs.LLM_API_KEY }}
+        LLM_MODEL: ${{ inputs.LLM_MODEL }}
