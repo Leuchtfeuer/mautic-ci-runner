@@ -11,9 +11,6 @@ jobs:
     name: AI Code Review
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Check required secrets
         run: |
           if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
