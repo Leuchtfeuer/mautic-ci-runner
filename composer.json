@@ -1,0 +1,27 @@
+{
+    "name": "leuchtfeuer/my-plugin",
+    "description": "Das ist die Beschreibung meines Projekts.",
+    "type": "mautic-plugin",
+    "keyword": [ "mautic", "plugin", "integration", "custom" ],
+    "extra": {
+      "install-directory-name": "LeuchtfeuerGeoContextBundle"
+    },
+    "require": {
+      "php": ">=7.4",
+      "mautic/core-lib": "^4.0"
+    },
+    "authors": [
+      {
+        "name": "Leuchtfeuer Digital Marketing GmbH",
+        "email": "mautic-plugins@leuchtfeuer.com",
+        "homepage": "https://Leuchtfeuer.com/mautic/",
+        "role": "Developer"
+      }
+    ],
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+      "psr-4": {
+        "MauticPlugin\\LeuchtfeuerGeoContextBundle\\": "src/"
+      }
+    }
+  }
