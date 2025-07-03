@@ -1,7 +1,7 @@
-# Plugin Name
+# MeinProjekt
 ## Overview / Purpose / Features
 Provide a short description of the plugin's purpose, key features, and benefits.
-## Requirements / Version Support
+## Version Support
 - Mautic 5.x (minimum 5.1) 
 - PHP X.X or higher
 ## Installation
