@@ -124,6 +124,9 @@ for key in "${composerkeys[@]}"; do
   fi
   if [[ $key == 'name' ]]; then
     [[ "$block" != *'"leuchtfeuer/'* ]] && composererrorsinside+=('"name" needs to start with "leuchtfeuer/"')
+    # nametheme=$(echo "$block" | sed -E 's/^"|"$//g')
+    nametheme=${name_theme##*/}
+    continue
   elif [[ $key == 'description' ]]; then
     description=$(echo "$block" | sed -E "s/.*\"description\"[[:space:]]*:[[:space:]]*\"([^\"]+)\".*/\1/")
     if [[ -z "${description:-}" ]]; then
@@ -209,9 +212,9 @@ if [[ "$CONFIGEXIST" == true ]]; then
       fi
     fi
     if [[ $key == 'name' ]]; then
-      name="$value"
-      if [[ -z "${name:-}" ]]; then
-        configerrors+=(name should have a value)
+      nameplugin="$value"
+      if [[ -z "${nameplugin:-}" ]]; then
+        configerrors+=("name should have a value")
       fi
     fi
   done
@@ -225,11 +228,21 @@ if [[ "$READMEEXIST" == true ]]; then
   if [[ "$PLUGIN" == true ]]; then
     readmekeys=('# Plugin Name' '## Overview' '## Requirements' '## Installation' '### Composer' '### Manual Installation' '## Configuration' '## Usage' '## Credits' '## Author')
     synonymover=('## Overview' '## Purpose' '## Features')
-    synonymreq=('## Version Support')
+    synonymreq=('## Requirements' '## Version Support')
   else
     readmekeys=('# Theme Name')
   fi
   for key in "${readmekeys[@]}"; do
+    if [[ $key == '# Theme Name' ]]; then
+      nametheme=$(echo "$nametheme" | tr '[:upper:]' '[:lower:]')
+      if [[ -z "${nametheme:-}" ]]; then
+        readmeerrors+=("TIPP: copy the name from $README to $COMPOSER in name behind \"leuchtfeuer/\"")
+      fi
+      if ! grep -Fq -- "# $nametheme" "$README"; then
+        readmeerrors+=("Name of Theme should be the same as end of name ($nametheme) in $COMPOSER")
+        continue
+      fi
+    fi
     if [[ $key == "## Overview" ]]; then
       forward=false
       for subkey in "${synonymover[@]}"; do
@@ -254,17 +267,17 @@ if [[ "$READMEEXIST" == true ]]; then
       if [[ "$forward" == true ]]; then
         continue
       else
-        readmeerrors+=('Missing Section: ## Requirements / Version Suppor')
+        readmeerrors+=('Missing Section: ## Requirements / Version Support')
         continue
       fi
     fi
     if [[ $key == '# Plugin Name' ]]; then
-      if [[ -z "${name:-}" ]]; then
+      if [[ -z "${nameplugin:-}" ]]; then
         readmeerrors+=("TIPP: copy name from $README to $CONFIG")
         continue
       fi
-      if ! grep -Fq -- "$name" "$README"; then
-        readmeerrors+=("Name of the Plugin should be the same as the name ($name) in $CONFIG")
+      if ! grep -Fq -- "$nameplugin" "$README"; then
+        readmeerrors+=("Name of the Plugin should be the same as the name ($nameplugin) in $CONFIG")
       fi
       continue
     fi
@@ -276,7 +289,6 @@ fi
 # End readme
 
 # Output of Errors
-
 if [[ "$CONFIGEXIST" == true && "$READMEEXIST" == true ]]; then
   if [[ ${#composererrorstoplevel[@]} -eq 0 && ${#composererrorsinside[@]} -eq 0 && ${#configerrors[@]} -eq 0 && ${#readmeerrors[@]} -eq 0 ]]; then
     printf "\e[32m$README, $CONFIG and $COMPOSER are in good shape\n\e[0m" # green
@@ -325,7 +337,7 @@ if [[ "$READMEEXIST" == true ]]; then
     done
   fi
 else
-  printf "\e[32m$README don't exist. \e[0m"
+  printf "\e[31m$README don't exist. \e[0m"
 fi
 exit 1
 
