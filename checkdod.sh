@@ -13,23 +13,23 @@ function extract_top_level_block {
     brace_level = 0
   }
   {
-    # Suche nach der Zeile mit "key":
+    # Searching for line with "key":
     if (!found && $0 ~ "\"" key "\"" && $0 ~ /:/) {
       found = 1
 
-      # Ausgabe der ganzen Zeile (inkl. Schlüssel und Wert)
+      # Output of the whole line(incl. key and value)
       print
 
-      # Zähle alle Klammern in dieser Zeile
+      # Count all braces
       brace_level += gsub(/[{\[]/, "")
       brace_level -= gsub(/[}\]]/, "")
 
-      # Wenn Block schon geschlossen ist (kein offenes { oder [), dann beenden
+      # exit if block ends (count braces reach 0)
       if (brace_level == 0) {
         exit
       }
 
-      # Sonst Block gestartet
+      # start block
       in_block = 1
       next
     }
@@ -54,6 +54,116 @@ function extract_config_value {
   [[ -z "$match" ]] && { echo ""; return 0; }
 
   echo "$match" | sed -E "s/^[[:space:]]*'$key'[[:space:]]*=>[[:space:]]*'([^']*)'[[:space:]]*,?/\1/"
+}
+
+function check_for_path_violations() {
+  local search_dir=${1:-.}
+  local filter=":[0-9]+:"
+  local path_pattern='(/[^[:space:]"'"'"']+|[A-Za-z]:\\[^[:space:]"'"'"']+|(\.\.?/)[^[:space:]"'"'"']+)'
+  local api_ignore='(GET|POST|PUT|DELETE|PATCH|curl|fetch|axios|http(s)?://|/api/)'
+  local others="($filter[[:space:]]*/\*\*)"
+  local exclude_ignore='exclude\('
+
+  local raw_matches
+  raw_matches=$(grep -Einr --include="*.php" --include="*.js" --exclude-dir={vendor,node_modules} "$path_pattern" "$search_dir" 2>/dev/null || true)
+
+  local matches
+  matches=$(echo "$raw_matches" | grep -Ev "$api_ignore" || true)
+  matches=$(echo "$matches" | grep -Ev "$others" || true)
+  matches=$(echo "$matches" | grep -Ev "$exclude_ignore" || true)
+
+  matches=$(echo "$matches" | awk -F: '
+  {
+    match($0, /[^ ]+\.php/)
+    filepath = substr($0, RSTART, RLENGTH)
+    split(filepath, parts, "/")
+    filename = parts[length(parts)]
+    if (filename == "config.php") next
+
+    line = substr($0, index($0,$3))
+
+    if (line ~ /^\s*\/\//) next
+    if (line ~ /@[A-Za-z0-9_\/.-]+/) next
+    if (line ~ /<\/[a-zA-Z0-9:_-]+>/) next
+
+    comment_pos = match(line, /\/\//)
+    if (comment_pos > 0) {
+      code_before_comment = substr(line, 1, comment_pos - 1)
+      if (code_before_comment ~ /\/[^[:space:]]*$/ || code_before_comment ~ /[A-Za-z]:\\[^[:space:]]*$/) {
+        print $0
+      }
+    } else {
+      print $0
+    }
+  }')
+
+  if [[ -n "$matches" ]]; then
+    while IFS= read -r line; do
+      pathviolations_tmp+=("$line")
+    done <<< "$matches"
+  fi
+
+  return 0
+}
+
+function extract_code_part() {
+  local line="$1"
+  local code paths=()
+  local file_rel="${line%%:*}"
+  local file_abs
+  file_abs=$(realpath "$file_rel" 2>/dev/null || true)
+  code="${line#*:}"
+  code="${code#*:}"
+  code="${code#"${code%%[![:space:]]*}"}"
+  while IFS= read -r match; do
+    clean_path="${match:1:${#match}-2}"
+    if [[ -n "$file_abs" ]]; then
+      echo "$file_abs: $clean_path"
+    else
+      echo "$file_rel: $clean_path"
+    fi
+  done < <(echo "$code" | grep -oE "['\"][./@A-Za-z0-9_:\\*?-]+['\"]")
+}
+
+function max_upward_traversal() {
+  local rel_path="$1"
+  local depth=0
+  local max_depth=0
+
+  IFS='/' read -ra parts <<< "$rel_path"
+
+  for part in "${parts[@]}"; do
+    if [[ "$part" == ".." ]]; then
+      ((depth++))
+      if ((depth > max_depth)); then
+        max_depth=$depth
+      fi
+    elif [[ -n "$part" && "$part" != "." ]]; then
+      ((depth--))
+      if ((depth < 0)); then depth=0; fi
+    fi
+  done
+
+  echo "$max_depth"
+}
+
+function check_path_tail() {
+  local base_path="$1"
+  local depth="$2"
+  IFS='/' read -ra parts <<< "$base_path"
+  local total=${#parts[@]}
+  local start=$(( total - depth ))
+  (( start < 0 )) && start=0
+
+  local keyword
+  for (( i = start; i < total; i++ )); do
+    keyword="${parts[i]}"
+    if [[ "$keyword" =~ ^(html|htdocs|current|shared)$ ]]; then
+      return 0 
+    fi
+  done
+
+  return 1
 }
 
 # script start
@@ -124,7 +234,6 @@ for key in "${composerkeys[@]}"; do
   fi
   if [[ $key == 'name' ]]; then
     [[ "$block" != *'"leuchtfeuer/'* ]] && composererrorsinside+=('"name" needs to start with "leuchtfeuer/"')
-    # nametheme=$(echo "$block" | sed -E 's/^"|"$//g')
     nametheme=${name_theme##*/}
     continue
   elif [[ $key == 'description' ]]; then
@@ -288,6 +397,31 @@ if [[ "$READMEEXIST" == true ]]; then
 fi
 # End readme
 
+# check for relativ or absolute paths in Code
+# Start path check
+SEARCH_DIR="./"
+pathviolations_tmp=()
+pathviolations=()
+check_for_path_violations "$SEARCH_DIR"
+for line in "${pathviolations_tmp[@]}"; do
+  while IFS= read -r code_part; do
+    base_path="${code_part%%:*}"
+    base_path=$(dirname "$base_path")
+    path_only="${code_part#*: }"
+
+    if [[ "$path_only" == /* || "$path_only" == *".."* ]]; then
+      depth=$(max_upward_traversal "$path_only")
+      echo "$base_path"
+      echo "$path_only"
+      echo "$depth"
+      if check_path_tail "$base_path" "$depth"; then
+        pathviolations+=("$line")
+      fi
+    fi
+  done < <(extract_code_part "$line")
+done
+# End path check
+
 # Output of Errors
 if [[ "$CONFIGEXIST" == true && "$READMEEXIST" == true ]]; then
   if [[ ${#composererrorstoplevel[@]} -eq 0 && ${#composererrorsinside[@]} -eq 0 && ${#configerrors[@]} -eq 0 && ${#readmeerrors[@]} -eq 0 ]]; then
@@ -338,6 +472,14 @@ if [[ "$READMEEXIST" == true ]]; then
   fi
 else
   printf "\e[31m$README don't exist. \e[0m"
+fi
+if [[ ${#pathviolations[@]} -eq 0 ]]; then
+  printf "\e[32mPath Violation check passed: no relevant hardcoded paths.\n\e[0m"
+else
+  printf "\e[31mPath Violation check failed:\n\e[0m"
+  for entry in "${pathviolations[@]}"; do
+    echo "  - $entry"
+  done
 fi
 exit 1
 
