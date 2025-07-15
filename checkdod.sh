@@ -170,15 +170,15 @@ function check_path_tail() {
 set -euo pipefail
 
 # global variables
-README="README.md"
-COMPOSER="composer.json"
-KEYWORDS=('mautic')
-DIRECTORY="install-directory-name"
-REQUIRE=('php' 'mautic/core-lib')
-CR="Leuchtfeuer Digital Marketing GmbH"
-COMPOSEREXIST=true
-CONFIGEXIST="unknown"
-READMEEXIST=true
+README="README.md"                        # location of Readme.md
+COMPOSER="composer.json"                  # location of composer.json
+KEYWORDS=('mautic')                       # keyword array for the keyword "keyword"
+DIRECTORY="install-directory-name"        # variable to get the install-directory-name of the composer.json
+REQUIRE=('php' 'mautic/core-lib')         # array for the keywords thats need to be in "require"-Option in the composer.json
+CR="Leuchtfeuer Digital Marketing GmbH"   # Copyright naming to check at multiple places
+COMPOSEREXIST=true                        # Variable that get changed in the script if composer.json do not exist
+CONFIGEXIST="unknown"                     # Variable that get changed in the script when it gets checked
+READMEEXIST=true                          # Variable that get changed in the script if README.md do not exist
 
 # Are the composer and readme existing?
 if [[ ! -f "$README" ]]; then
@@ -195,12 +195,13 @@ fi
 # Theme or Plugin?
 PLUGIN=$(grep '"type": "mautic-' $COMPOSER | sed -E 's/.*"type"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/') # "mautic- for specific type of the file and not of something else in the composer"
 if [[ "$PLUGIN" == "mautic-plugin" ]]; then
-  PLUGIN=true
-  KEYWORDS+=('plugin' 'integration')
+  PLUGIN=true                             # is the directory to check a plugin or not?
+  KEYWORDS+=('plugin' 'integration')      # additional to the previous one
   AUTHORS=("name\": \"$CR" 'homepage": "https://Leuchtfeuer.com/mautic/' 'role": "Developer' 'email": "mautic-plugins@leuchtfeuer.com')
+                                          # keywords that needs to exist in the "Author"-Options in composer.json
   LICENSE="GPL-3\.0-or-later"
-  AUTOLOAD="psr-4"
-  CONFIG="Config/config.php"
+  AUTOLOAD="psr-4"                        # "autoload"-Option needs this value in composer.json
+  CONFIG="Config/config.php"              # location of config.php
 elif [[ "$PLUGIN" == "mautic-theme" ]]; then
   PLUGIN=false
   KEYWORDS+=('theme')
@@ -411,9 +412,6 @@ for line in "${pathviolations_tmp[@]}"; do
 
     if [[ "$path_only" == /* || "$path_only" == *".."* ]]; then
       depth=$(max_upward_traversal "$path_only")
-      echo "$base_path"
-      echo "$path_only"
-      echo "$depth"
       if check_path_tail "$base_path" "$depth"; then
         pathviolations+=("$line")
       fi
