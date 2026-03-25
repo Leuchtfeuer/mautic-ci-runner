@@ -91,7 +91,7 @@ jobs:
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
 
       - name: Install Composer dependencies
-        #if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
         run: composer install
 
       - name: Add plugin dependencies
@@ -117,7 +117,7 @@ jobs:
           path: var/logs/
 
       - name: Create composer cache
-        #if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
         id: cache-save-composer
         uses: actions/cache/save@v4
         with:
