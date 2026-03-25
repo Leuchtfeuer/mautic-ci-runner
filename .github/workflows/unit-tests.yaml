@@ -31,27 +31,9 @@ jobs:
     strategy:
       matrix:
         php-versions: ['8.3']
-        db-types: ['mysql','mariadb']
         mautic-versions: ['5.2.7']
 
     name: Tests on PHP ${{ matrix.php-versions }}, ${{ matrix.db-types }}, Mautic ${{ matrix.mautic-versions }}
-
-    services:
-      database:
-        image: ${{ matrix.db-types == 'mysql' && 'mysql:5.7' || 'mariadb:10.3' }}
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: mautictest
-        ports:
-          - 3306
-        options: >-
-          --shm-size=2gb
-          --name=${{ matrix.db-types }}
-          --tmpfs=/var/lib/mysql
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
 
     steps:
       - name: Checkout Mautic
@@ -84,13 +66,6 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
           coverage: pcov
 
-      - name: add MySQL config file
-        run: |
-          mysqldump --version
-          mysqldump --print-defaults
-          cp .github/ci-files/.my.cnf ~/.my.cnf
-          mysqldump --print-defaults
-
       - name: Set SYMFONY_ENV to test
         run: |
           echo "SYMFONY_ENV=test" >> $GITHUB_ENV
@@ -121,18 +96,6 @@ jobs:
       - name: Add plugin dependencies
         if: inputs.additionalRequirements != ''
         run: composer require ${{ inputs.additionalRequirements }} --no-interaction
-
-      - name: Install Mautic
-        env:
-          DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: |
-          cp ./.github/ci-files/local.php ./config/local.php
-          php bin/console mautic:install --force http://localhost
-
-      - name: Install Plugins
-        env:
-          DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: php bin/console mautic:plugins:install --env=dev
 
       - name: Run PHPUNIT tests
         env:

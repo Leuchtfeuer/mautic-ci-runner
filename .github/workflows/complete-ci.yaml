@@ -1,0 +1,63 @@
+name: CI Tests
+
+on:
+  workflow_call:
+    inputs:
+      mauticVersion:
+        required: true
+        type: string
+      runner:
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+        description: 'The GitHub runner to be used'
+      pluginDir:
+        required: true
+        type: string
+      additionalRequirements:
+        required: false
+        default: ''
+        type: string
+        description: 'Additional composer requirements'
+    secrets:
+      PERSONAL_ACCESS_TOKEN:
+        required: false
+        description: 'The GitHub Personal Access Token'
+      ANTHROPIC_API_KEY:
+        required: false
+        description: 'The API Key for Athropics API'
+
+
+jobs:
+  determine-reqs:
+    name: Determine requirements
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this plugin
+        uses: actions/checkout@v4
+      - name: Check Test directory
+        run: if [ -d ./Tests ]; then echo "PHPUNIT=1" >> $GITHUB_ENV; else echo "PHPUNIT=0" >> $GITHUB_ENV; fi
+      - name: DEBUG get env var
+        run: echo ${{ env.PHPUNIT }}
+      - name: DEBUG fail
+        run: exit 1
+  no-db:
+    name: Tests w/o DB
+    needs: [determine-reqs]
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/no-db.yaml@mtc-5990-ci-workflow
+    with:
+      mauticVersion: 5.2.7
+      pluginDir:  plugins/LeuchtfeuerSave2PdfBundle
+      additionalRequirements: 'dompdf/dompdf:"^3.1"'
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  integration-tests:
+    name: Tests w/ DB
+    needs: [ determine-reqs ]
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/phpunit.yaml@mtc-5990-ci-workflow
+    with:
+      mauticVersion: 5.2.7
+      pluginDir:  plugins/LeuchtfeuerSave2PdfBundle
+      additionalRequirements: 'dompdf/dompdf:"^3.1"'
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}

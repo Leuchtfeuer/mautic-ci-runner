@@ -23,9 +23,6 @@ on:
       PERSONAL_ACCESS_TOKEN:
         required: false
         description: 'The GitHub Personal Access Token'
-      ANTHROPIC_API_KEY:
-        required: false
-        description: 'The API Key for Athropics API'
 
 jobs:
   no-db:
