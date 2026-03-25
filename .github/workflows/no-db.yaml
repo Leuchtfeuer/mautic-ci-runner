@@ -1,0 +1,97 @@
+name: Mautic Plugin tests without DB
+
+on:
+  workflow_call:
+    inputs:
+      mauticVersion:
+        required: true
+        type: string
+      runner:
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+        description: 'The GitHub runner to be used'
+      pluginDir:
+        required: true
+        type: string
+    secrets:
+      PERSONAL_ACCESS_TOKEN:
+        required: false
+        description: 'The GitHub Personal Access Token'
+      ANTHROPIC_API_KEY:
+        required: false
+        description: 'The API Key for Athropics API'
+
+jobs:
+  no-db:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-versions: [ '8.3' ]
+        mautic-versions: [ '5.2.7' ]
+
+    name: Tests on PHP ${{ matrix.php-versions }}, Mautic ${{ matrix.mautic-versions }}
+
+    steps:
+      - name: Checkout Mautic
+        uses: actions/checkout@v4
+        with:
+          repository: mautic/mautic
+          ref: ${{ matrix.mautic-versions }}
+
+      - name: Checkout this plugin
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.pluginDir }}
+
+      - name: Checkout required ci files
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: ciFiles
+          path: ciFiles
+
+      - name: DEBUG list
+        run: ls -la
+
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          ini-values: -dpcov.enabled=0, pcov.directory=."
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+          coverage: pcov
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install
+
+      - name: Run Code Style check
+        run: bin/php-cs-fixer fix ${{ inputs.pluginDir }} --config=.php-cs-fixer.php -v --dry-run --show-progress=dots --diff
+
+      - name: PHPSTAN
+        run: composer phpstan -- ${{ inputs.pluginDir }}
+
+      - name: Rector
+        run: composer rector -- --dry-run --no-progress-bar ${{ inputs.pluginDir }}
+
+      - name: Twig Lint
+        run: bin/console lint:twig ${{ inputs.pluginDir }}
+
+      - name: Upload logs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mautic-logs-php${{ matrix.php-versions }}-mautic${{ matrix.mautic-versions }}
+          path: var/logs/

@@ -127,7 +127,7 @@ jobs:
           path: ciFiles
 
       - name: DEBUG list
-        run: ll
+        run: ls -la
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
@@ -221,7 +221,7 @@ jobs:
           path: ciFiles
 
       - name: DEBUG list
-        run: ll
+        run: ls -la
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
