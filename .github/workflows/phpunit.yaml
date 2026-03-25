@@ -95,22 +95,30 @@ jobs:
           echo "MAUTIC_ENV=test" >> $GITHUB_ENV
           echo "MAUTIC_TABLE_PREFIX=mautic_" >> $GITHUB_ENV
 
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - name: Creates cache key depending on the composer files
+        id: generate-composer-cache-key
+        run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}" >> "$GITHUB_OUTPUT"
 
-      - name: Cache composer dependencies
-        uses: actions/cache@v3
+      - name: Get Composer Cache Directory
+        id: generate-composer-cache-dir
+        run: echo "composer-cache-dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Cache
+        uses: actions/cache/restore@v4
+        id: cache-restore-composer
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          path: |
+            bin
+            vendor
+          key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
 
       - name: Install Composer dependencies
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
         run: composer install
 
-      - name: Install plugin dependencies
-        run: composer require dompdf/dompdf:"^3.1" --no-interaction
+      - name: Add plugin dependencies
+        if: inputs.additionalRequirements != ''
+        run: composer require ${{ inputs.additionalRequirements }} --no-interaction
 
       - name: Install Mautic
         env:
@@ -134,3 +142,13 @@ jobs:
         with:
           name: mautic-logs-php${{ matrix.php-versions }}-${{ matrix.db-types }}-mautic${{ matrix.mautic-versions }}
           path: var/logs/
+
+      - name: Create composer cache
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        id: cache-save-composer
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            bin
+            vendor
+          key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
