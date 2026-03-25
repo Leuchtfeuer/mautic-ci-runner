@@ -86,11 +86,12 @@ jobs:
         id: cache-restore-composer
         with:
           path: |
+            bin
             vendor
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
 
       - name: Install Composer dependencies
-        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        #if: steps.cache-restore-composer.outputs.cache-hit != 'true'
         run: composer install
 
       - name: Run Code Style check
@@ -117,5 +118,6 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
+            bin
             vendor
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
