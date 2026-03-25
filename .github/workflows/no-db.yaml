@@ -113,7 +113,7 @@ jobs:
           path: var/logs/
 
       - name: Create composer cache
-        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        #if: steps.cache-restore-composer.outputs.cache-hit != 'true'
         id: cache-save-composer
         uses: actions/cache/save@v4
         with:
