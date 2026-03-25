@@ -14,6 +14,11 @@ on:
       pluginDir:
         required: true
         type: string
+      additionalRequirements:
+        required: false
+        default: ''
+        type: string
+        description: 'Additional composer requirements'
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
@@ -64,6 +69,10 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
           coverage: pcov
 
+      - name: Add plugin dependencies
+        if: inputs.additionalRequirements != ''
+        run: composer require ${{ inputs.additionalRequirements }} --no-interaction --no-update
+
       - name: Creates cache key depending on the composer files
         id: generate-composer-cache-key
         run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}-${{ hashFiles('composer.patches.json') }}" >> "$GITHUB_OUTPUT"
@@ -83,9 +92,6 @@ jobs:
       - name: Install Composer dependencies
         if: steps.cache-restore-composer.outputs.cache-hit != 'true'
         run: composer install
-
-      - name: Install plugin dependencies
-        run: composer require dompdf/dompdf:"^3.1" --no-interaction
 
       - name: Run Code Style check
         run: bin/php-cs-fixer fix ${{ inputs.pluginDir }} --config=.php-cs-fixer.php -v --dry-run --show-progress=dots --diff
