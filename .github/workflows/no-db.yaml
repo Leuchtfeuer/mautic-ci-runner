@@ -92,7 +92,7 @@ jobs:
 
       - name: Install Composer dependencies
         #if: steps.cache-restore-composer.outputs.cache-hit != 'true'
-        run: composer install
+        run: composer update
 
       - name: Run Code Style check
         run: bin/php-cs-fixer fix ${{ inputs.pluginDir }} --config=.php-cs-fixer.php -v --dry-run --show-progress=dots --diff
