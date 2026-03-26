@@ -22,6 +22,12 @@ on:
         default: ''
         type: string
         description: 'Additional composer requirements'
+      composerCacheKey:
+        required: true
+        type: string
+      composerCacheDir:
+        required: true
+        type: string
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
@@ -75,14 +81,6 @@ jobs:
           echo "MAUTIC_ENV=test" >> $GITHUB_ENV
           echo "MAUTIC_TABLE_PREFIX=mautic_" >> $GITHUB_ENV
 
-      - name: Creates cache key depending on the composer files
-        id: generate-composer-cache-key
-        run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}" >> "$GITHUB_OUTPUT"
-
-      - name: Get Composer Cache Directory
-        id: generate-composer-cache-dir
-        run: echo "composer-cache-dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
       - name: Restore Cache
         uses: actions/cache/restore@v4
         id: cache-restore-composer
@@ -90,33 +88,15 @@ jobs:
           path: |
             bin
             vendor
-          key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
-
-      - name: Install Composer dependencies
-        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
-        run: composer install
-
-      - name: Add plugin dependencies
-        if: inputs.additionalRequirements != '' && steps.cache-restore-composer.outputs.cache-hit != 'true'
-        run: composer require ${{ inputs.additionalRequirements }} --no-interaction
+          key: ${{ inputs.composerCacheKey }}
 
       - name: Run PHPUNIT tests
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-clover=${{ inputs.pluginDir }}/coverage.xml --coverage-text
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-clover=${{ inputs.pluginDir }}/coverage.xml --coverage-text --testsuite Unit
 
       - name: Upload logs as artifacts
         uses: actions/upload-artifact@v4
         with:
           name: mautic-logs-php${{ matrix.php-versions }}-${{ matrix.db-types }}-mautic${{ matrix.mautic-versions }}
           path: var/logs/
-
-      - name: Create composer cache
-        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
-        id: cache-save-composer
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            bin
-            vendor
-          key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}

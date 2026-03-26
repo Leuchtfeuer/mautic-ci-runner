@@ -35,7 +35,10 @@ jobs:
       - name: Checkout this plugin
         uses: actions/checkout@v4
       - name: Check Test directory
-        run: if [ -d ./Tests ]; then echo "PHPUNIT=1" >> $GITHUB_ENV; else echo "PHPUNIT=0" >> $GITHUB_ENV; fi
+        run: | 
+          if [ -d ./Tests/Unit ]; then echo "UNIT=1" >> $GITHUB_ENV; else echo "UNIT=0" >> $GITHUB_ENV; fi
+          if [ -d ./Tests/Functional ]; then echo "FUNCTIONAL=1" >> $GITHUB_ENV; else echo "FUNCTIONAL=0" >> $GITHUB_ENV; fi
+
   ai-code-review:
     name: AI Code Review
     needs: [ determine-reqs ]
@@ -68,11 +71,25 @@ jobs:
       composerCacheDir: ${{ needs.composer-install.outputs.composer-cache-dir }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-  integration-tests:
-    name: Tests w/ DB
-    needs: [composer-install]
+  unit-tests:
+    name: Unit Tests
+    needs: [ composer-install ]
     if: true
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/phpunit.yaml@mtc-5990-ci-workflow
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@mtc-5990-ci-workflow
+    with:
+      mauticVersion: ${{ inputs.mauticVersion }}
+      phpVersion: "8.3"
+      pluginDir: ${{ inputs.pluginDir }}
+      additionalRequirements: ${{ inputs.additionalRequirements }}
+      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
+      composerCacheDir: ${{ needs.composer-install.outputs.composer-cache-dir }}
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  functional-tests:
+    name: Functional Tests
+    needs: [composer-install]
+    if: false
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
       phpVersion: "8.3"
