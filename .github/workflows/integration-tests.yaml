@@ -32,11 +32,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ${{ inputs.phpVersion }}
         db-types: ['mysql','mariadb']
-        mautic-versions: ['5.2.7']
 
-    name: Tests on PHP ${{ matrix.php-versions }}, ${{ matrix.db-types }}, Mautic ${{ matrix.mautic-versions }}
+    name: Tests on PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
 
     services:
       database:
@@ -60,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: mautic/mautic
-          ref: ${{ matrix.mautic-versions }}
+          ref: ${{ inputs.mauticVersion }}
 
       - name: Checkout this plugin
         uses: actions/checkout@v4
@@ -81,7 +79,7 @@ jobs:
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ inputs.phpVersion }}
           ini-values: -dpcov.enabled=0, pcov.directory=."
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
           coverage: pcov
@@ -144,7 +142,7 @@ jobs:
       - name: Upload logs as artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mautic-logs-php${{ matrix.php-versions }}-${{ matrix.db-types }}-mautic${{ matrix.mautic-versions }}
+          name: mautic-logs-php${{ inputs.phpVersion }}-${{ matrix.db-types }}-mautic${{ inputs.mauticVersion }}
           path: var/logs/
 
       - name: Create composer cache

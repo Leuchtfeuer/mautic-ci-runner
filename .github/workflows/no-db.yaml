@@ -36,17 +36,13 @@ on:
 jobs:
   no-db:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        mautic-versions: [ '5.2.7' ]
-
-    name: Tests on PHP ${{ matrix.php-versions }}, Mautic ${{ matrix.mautic-versions }}
+    name: Tests on PHP ${{ inputs.phpVersion }}, Mautic ${{ inputs.mauticVersion }}
     steps:
       - name: Checkout Mautic
         uses: actions/checkout@v4
         with:
           repository: mautic/mautic
-          ref: ${{ matrix.mautic-versions }}
+          ref: ${{ inputs.mauticVersion }}
 
       - name: Checkout this plugin
         uses: actions/checkout@v4
@@ -93,5 +89,5 @@ jobs:
       - name: Upload logs as artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mautic-logs-php${{ matrix.php-versions }}-mautic${{ matrix.mautic-versions }}
+          name: mautic-logs-php${{ inputs.phpVersion }}-mautic${{ inputs.mauticVersion }}
           path: var/logs/
