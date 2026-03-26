@@ -102,7 +102,7 @@ jobs:
 
   no-db:
     name: Tests w/o DB
-    needs: [composer-install]
+    needs: [determine-reqs, composer-install]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/no-db.yaml@mtc-5990-ci-workflow
     strategy:
       matrix:
@@ -120,7 +120,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    needs: [ composer-install ]
+    needs: [determine-reqs,  composer-install ]
     if: ${{ needs.determine-reqs.outputs.UNIT == 1 }}
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@mtc-5990-ci-workflow
     strategy:
@@ -139,7 +139,7 @@ jobs:
 
   functional-tests:
     name: Functional Tests
-    needs: [composer-install]
+    needs: [determine-reqs, composer-install]
     if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-5990-ci-workflow
     strategy:
