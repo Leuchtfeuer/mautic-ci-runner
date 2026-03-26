@@ -62,14 +62,6 @@ jobs:
           sparse-checkout: ciFiles
           path: ciFiles
 
-      - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          ini-values: -dpcov.enabled=0, pcov.directory=."
-          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
-          coverage: pcov
-
       - name: Creates cache key depending on the composer files
         id: generate-composer-cache-key
         run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}-${{ inputs.phpVersion }}" >> "$GITHUB_OUTPUT"
@@ -86,6 +78,15 @@ jobs:
             bin
             vendor
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
+
+      - name: Setup PHP, with composer and extensions
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.phpVersion }}
+          ini-values: -dpcov.enabled=0, pcov.directory=."
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+          coverage: pcov
 
       - name: Install Composer dependencies
         if: steps.cache-restore-composer.outputs.cache-hit != 'true'
