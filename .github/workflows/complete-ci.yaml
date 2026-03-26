@@ -43,12 +43,12 @@ jobs:
           path: ciFiles
       - name: Check Test directory
         run: | 
-          if [ -d ./Tests/Unit ]; then echo "UNIT=1" >> $GITHUB_ENV; else echo "UNIT=0" >> $GITHUB_ENV; fi
-          if [ -d ./Tests/Functional ]; then echo "FUNCTIONAL=1" >> $GITHUB_ENV; else echo "FUNCTIONAL=0" >> $GITHUB_ENV; fi
+          if [ -d ./Tests/Unit ]; then echo "UNIT=1" >> "$GITHUB_OUTPUT"; else echo "UNIT=0" >> "$GITHUB_OUTPUT"; fi
+          if [ -d ./Tests/Functional ]; then echo "FUNCTIONAL=1" >> "$GITHUB_OUTPUT"; else echo "FUNCTIONAL=0" >> "$GITHUB_OUTPUT"; fi
       - name: Get Mautic Versions
         id: mauticVersions
         run: |
-          echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f2)"
+          echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
 
   check-dod:
     name: Check DoD
