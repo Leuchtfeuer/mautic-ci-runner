@@ -37,7 +37,6 @@ jobs:
       FUNCTIONAL: ${{ steps.mauticVersions.outputs.FUNCTIONAL }}
       mauticVersions: ${{ steps.mauticVersions.outputs.mauticVersions }}
       phpVersions: ${{ steps.mauticVersions.outputs.phpVersions }}
-
     steps:
       - name: Checkout this plugin
         uses: actions/checkout@v4
