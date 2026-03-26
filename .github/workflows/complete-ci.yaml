@@ -31,6 +31,10 @@ jobs:
   determine-reqs:
     name: Determine requirements
     runs-on: ubuntu-latest
+    outputs:
+      UNIT: ${{ steps.directories.outputs.UNIT }}
+      FUNCTIONAL: ${{ steps.mauticVersions.outputs.FUNCTIONAL }}
+      mauticVersions: ${{ steps.mauticVersions.outputs.mauticVersions }}
     steps:
       - name: Checkout this plugin
         uses: actions/checkout@v4
@@ -42,6 +46,7 @@ jobs:
           sparse-checkout: ciFiles
           path: ciFiles
       - name: Check Test directory
+        id: directories
         run: | 
           if [ -d ./Tests/Unit ]; then echo "UNIT=1" >> "$GITHUB_OUTPUT"; else echo "UNIT=0" >> "$GITHUB_OUTPUT"; fi
           if [ -d ./Tests/Functional ]; then echo "FUNCTIONAL=1" >> "$GITHUB_OUTPUT"; else echo "FUNCTIONAL=0" >> "$GITHUB_OUTPUT"; fi
@@ -49,7 +54,6 @@ jobs:
         id: mauticVersions
         run: |
           echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
-          echo $GITHUB_OUTPUT
 
   check-dod:
     name: Check DoD
