@@ -23,11 +23,22 @@ on:
       PERSONAL_ACCESS_TOKEN:
         required: false
         description: 'The GitHub Personal Access Token'
+    outputs:
+      composer-cache-key:
+        description: "The composer cache key"
+        value: ${{ jobs.composer-install.outputs.composer-cache-key }}
+      composer-cache-dir:
+        description: "The composer cache dir"
+        value: ${{ jobs.composer-install.outputs.composer-cache-dir }}
 
 jobs:
   composer-install:
     name: Composer install
     runs-on: ubuntu-latest
+    outputs:
+      # Map the job outputs to step outputs
+      composer-cache-key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
+      composer-cache-dir: ${{ steps.generate-composer-cache-dir.outputs.composer-cache-dir }}
     steps:
       - name: Checkout Mautic
         uses: actions/checkout@v4

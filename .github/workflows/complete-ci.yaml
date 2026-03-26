@@ -55,12 +55,14 @@ jobs:
       mauticVersion: ${{ inputs.mauticVersion }}
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
+      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-dir }}
+      composerCacheDir: ${{ needs.composer-install.outputs.composer-cache-dir }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
   integration-tests:
     name: Tests w/ DB
     needs: [composer-install]
-    if: env.PHUNIT == 1
+    if: env.PHUNIT == 13
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/phpunit.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
