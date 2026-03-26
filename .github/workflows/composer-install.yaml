@@ -64,7 +64,7 @@ jobs:
 
       - name: Creates cache key depending on the composer files
         id: generate-composer-cache-key
-        run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}-${{ inputs.phpVersion }}" >> "$GITHUB_OUTPUT"
+        run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}-${{ inputs.phpVersion }}-mautic${{ inputs.mauticVersion }}" >> "$GITHUB_OUTPUT"
 
       - name: Get Composer Cache Directory
         id: generate-composer-cache-dir

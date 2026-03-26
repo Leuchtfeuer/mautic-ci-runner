@@ -35,6 +35,8 @@ jobs:
       UNIT: ${{ steps.directories.outputs.UNIT }}
       FUNCTIONAL: ${{ steps.mauticVersions.outputs.FUNCTIONAL }}
       mauticVersions: ${{ steps.mauticVersions.outputs.mauticVersions }}
+      phpVersions: ${{ steps.mauticVersions.outputs.phpVersions }}
+
     steps:
       - name: Checkout this plugin
         uses: actions/checkout@v4
@@ -54,6 +56,7 @@ jobs:
         id: mauticVersions
         run: |
           echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
+          echo "phpVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
 
   check-dod:
     name: Check DoD
@@ -88,9 +91,10 @@ jobs:
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
     with:
       mauticVersion: ${{ matrix.mauticVersion }}
-      phpVersion: "8.3"
+      phpVersion: ${{ matrix.phpVersion }}
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
     secrets:
@@ -101,9 +105,13 @@ jobs:
     if: false
     needs: [composer-install]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/no-db.yaml@mtc-5990-ci-workflow
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
     with:
-      mauticVersion: ${{ inputs.mauticVersion }}
-      phpVersion: "8.3"
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
@@ -116,9 +124,13 @@ jobs:
     needs: [ composer-install ]
     if: false
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@mtc-5990-ci-workflow
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
     with:
-      mauticVersion: ${{ inputs.mauticVersion }}
-      phpVersion: "8.3"
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
       pluginDir: ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
@@ -131,9 +143,13 @@ jobs:
     needs: [composer-install]
     if: false
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-5990-ci-workflow
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
     with:
-      mauticVersion: ${{ inputs.mauticVersion }}
-      phpVersion: "8.3"
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
