@@ -49,6 +49,7 @@ jobs:
         id: mauticVersions
         run: |
           echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
+          echo $GITHUB_OUTPUT
 
   check-dod:
     name: Check DoD
@@ -63,7 +64,7 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: checkDod.sh
-          path: checkDo
+          path: checkDod
       - name: Run CheckDod
         run: bash checkDod/checkDod.sh
 
