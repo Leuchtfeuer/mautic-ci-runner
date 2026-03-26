@@ -11,7 +11,14 @@
         <testsuite name="all">
             <directory>Tests</directory>
         </testsuite>
+        <testsuite name="unit">
+            <directory>Tests/Unit</directory>
+        </testsuite>
+        <testsuite name="functional">
+            <directory>Tests/Functional</directory>
+        </testsuite>
     </testsuites>
+
 
     <php>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled"/>
