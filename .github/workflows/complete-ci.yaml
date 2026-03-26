@@ -49,6 +49,7 @@ jobs:
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
+      phpVersion: ${{ inputs.phpVersion }}
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
     secrets:
