@@ -88,7 +88,7 @@ jobs:
       - name: Run PHPUNIT tests
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-clover=${{ inputs.pluginDir }}/coverage.xml --coverage-text --testsuite Unit
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-clover=${{ inputs.pluginDir }}/coverage.xml --coverage-text --testsuite unit
 
       - name: Upload logs as artifacts
         uses: actions/upload-artifact@v4
