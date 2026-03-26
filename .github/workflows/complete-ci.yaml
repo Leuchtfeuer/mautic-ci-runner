@@ -36,10 +36,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Check Test directory
         run: if [ -d ./Tests ]; then echo "PHPUNIT=1" >> $GITHUB_ENV; else echo "PHPUNIT=0" >> $GITHUB_ENV; fi
-      - name: DEBUG fail
-        run: exit 1
   composer-install:
     name: Install composer dependencies
+    needs: [determine-reqs]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
@@ -55,7 +54,19 @@ jobs:
       mauticVersion: ${{ inputs.mauticVersion }}
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
-      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-dir }}
+      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
       composerCacheDir: ${{ needs.composer-install.outputs.composer-cache-dir }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  #integration-tests:
+  #  name: Tests w/ DB
+  #  needs: [composer-install]
+  #  if: ${{ env.PHUNIT == 13 }}
+  #  uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/phpunit.yaml@mtc-5990-ci-workflow
+  #  with:
+  #    mauticVersion: ${{ inputs.mauticVersion }}
+  #    pluginDir:  ${{ inputs.pluginDir }}
+  #    additionalRequirements: ${{ inputs.additionalRequirements }}
+  #  secrets:
+  #    PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
