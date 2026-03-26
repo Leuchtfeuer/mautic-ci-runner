@@ -60,7 +60,7 @@ jobs:
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/no-db.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
-      phpVersion: ['8.3']
+      phpVersion: "['8.3']"
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
