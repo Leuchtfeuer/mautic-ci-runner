@@ -119,7 +119,7 @@ jobs:
         run: composer install
 
       - name: Add plugin dependencies
-        if: inputs.additionalRequirements != ''
+        if: inputs.additionalRequirements != '' && steps.cache-restore-composer.outputs.cache-hit != 'true'
         run: composer require ${{ inputs.additionalRequirements }} --no-interaction
 
       - name: Install Mautic
