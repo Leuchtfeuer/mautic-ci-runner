@@ -38,7 +38,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ${{ inputs.phpVersion }}
         mautic-versions: [ '5.2.7' ]
 
     name: Tests on PHP ${{ matrix.php-versions }}, Mautic ${{ matrix.mautic-versions }}
@@ -65,7 +64,7 @@ jobs:
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ inputs.phpVersion }}
           ini-values: -dpcov.enabled=0, pcov.directory=."
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
           coverage: pcov
