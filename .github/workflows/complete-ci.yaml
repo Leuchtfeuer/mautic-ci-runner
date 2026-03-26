@@ -74,6 +74,7 @@ jobs:
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/phpunit.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
+      phpVersion: "8.3"
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
     secrets:
