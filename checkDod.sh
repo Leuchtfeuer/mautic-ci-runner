@@ -167,7 +167,7 @@ function check_path_tail() {
 }
 
 # script start
-set -euo pipefail
+ set -eo pipefail
 
 # global variables
 README="README.md"                        # location of Readme.md
