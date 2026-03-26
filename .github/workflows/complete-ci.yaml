@@ -25,8 +25,7 @@ on:
         description: 'The GitHub Personal Access Token'
       ANTHROPIC_API_KEY:
         required: false
-        description: 'The API Key for Athropics API'
-
+        description: 'The API Key for Anthropics API'
 
 jobs:
   determine-reqs:
@@ -39,9 +38,18 @@ jobs:
         run: if [ -d ./Tests ]; then echo "PHPUNIT=1" >> $GITHUB_ENV; else echo "PHPUNIT=0" >> $GITHUB_ENV; fi
       - name: DEBUG fail
         run: exit 1
+  composer-install:
+    name: Install composer dependencies
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-5990-ci-workflow
+    with:
+      mauticVersion: ${{ inputs.mauticVersion }}
+      pluginDir:  ${{ inputs.pluginDir }}
+      additionalRequirements: ${{ inputs.additionalRequirements }}
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
   no-db:
     name: Tests w/o DB
-    needs: [determine-reqs]
+    needs: [composer-install]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/no-db.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
@@ -51,7 +59,7 @@ jobs:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
   integration-tests:
     name: Tests w/ DB
-    needs: [ determine-reqs ]
+    needs: [composer-install]
     if: env.PHUNIT == 1
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/phpunit.yaml@mtc-5990-ci-workflow
     with:
