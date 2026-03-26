@@ -6,9 +6,11 @@ on:
       mauticVersion:
         required: true
         type: string
+        description: "Mautic Version"
       phpVersion:
         required: true
         type: string
+        description: "PHP Version"
       runner:
         required: false
         default: 'ubuntu-latest'
@@ -25,9 +27,11 @@ on:
       composerCacheKey:
         required: true
         type: string
+        description: "Key for Composer Cache"
       composerCacheDir:
         required: true
         type: string
+        description: "Directories for Composer Cache"
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false

@@ -6,6 +6,7 @@ on:
       mauticVersion:
         required: true
         type: string
+        description: "The Mautic MAJOR version"
       runner:
         required: false
         default: 'ubuntu-latest'

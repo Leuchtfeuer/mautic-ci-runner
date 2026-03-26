@@ -6,9 +6,11 @@ on:
       mauticVersion:
         required: true
         type: string
+        description: "The Mautic version"
       phpVersion:
         required: true
         type: string
+        description: "The PHP Version"
       runner:
         required: false
         default: 'ubuntu-latest'
@@ -17,6 +19,7 @@ on:
       pluginDir:
         required: true
         type: string
+        description: "Plugin installation directory"
       additionalRequirements:
         required: false
         default: ''
