@@ -6,6 +6,9 @@ on:
       mauticVersion:
         required: true
         type: string
+      phpVersion:
+        required: true
+        type: string
       runner:
         required: false
         default: 'ubuntu-latest'
@@ -27,10 +30,9 @@ on:
 jobs:
   phpunit:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        php-versions: ['8.3']
+        php-versions: ${{ inputs.phpVersion }}
         db-types: ['mysql','mariadb']
         mautic-versions: ['5.2.7']
 

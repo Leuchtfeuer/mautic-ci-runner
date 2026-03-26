@@ -6,6 +6,9 @@ on:
       mauticVersion:
         required: true
         type: string
+      phpVersion:
+        required: true
+        type: string
       runner:
         required: false
         default: 'ubuntu-latest'
@@ -19,9 +22,6 @@ on:
         default: ''
         type: string
         description: 'Additional composer requirements'
-      phpVersion:
-        required: true
-        type: string
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
@@ -38,6 +38,9 @@ jobs:
   composer-install:
     name: Composer install
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: ${{ inputs.phpVersion }}
     outputs:
       # Map the job outputs to step outputs
       composer-cache-key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
@@ -65,14 +68,14 @@ jobs:
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ inputs.phpVersion}}
+          php-version: ${{ matrix.php-versions }}
           ini-values: -dpcov.enabled=0, pcov.directory=."
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
           coverage: pcov
 
       - name: Creates cache key depending on the composer files
         id: generate-composer-cache-key
-        run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}" >> "$GITHUB_OUTPUT"
+        run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}-${{ matrix.php-versions }}" >> "$GITHUB_OUTPUT"
 
       - name: Get Composer Cache Directory
         id: generate-composer-cache-dir

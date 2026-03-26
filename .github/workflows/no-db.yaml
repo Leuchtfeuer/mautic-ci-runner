@@ -6,6 +6,9 @@ on:
       mauticVersion:
         required: true
         type: string
+      phpVersion:
+        required: true
+        type: string
       runner:
         required: false
         default: 'ubuntu-latest'
@@ -35,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.3' ]
+        php-versions: ${{ inputs.phpVersion }}
         mautic-versions: [ '5.2.7' ]
 
     name: Tests on PHP ${{ matrix.php-versions }}, Mautic ${{ matrix.mautic-versions }}
