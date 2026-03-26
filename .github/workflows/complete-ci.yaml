@@ -62,7 +62,7 @@ jobs:
   integration-tests:
     name: Tests w/ DB
     needs: [composer-install]
-    if: env.PHUNIT == 13
+    if: ${{ env.PHUNIT == 13 }}
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/phpunit.yaml@mtc-5990-ci-workflow
     with:
       mauticVersion: ${{ inputs.mauticVersion }}
