@@ -1,4 +1,4 @@
-name: Mautic Plugin tests
+name: Composer Installation
 
 on:
   workflow_call:
