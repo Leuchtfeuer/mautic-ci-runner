@@ -1,26 +1,20 @@
-name: Mautic Plugin tests
+name: AI Code Review
 
 on:
   workflow_call:
     inputs:
-      mauticVersion:
-        required: true
-        type: string
       runner:
         required: false
         default: 'ubuntu-latest'
         type: string
         description: 'The GitHub runner to be used'
-      pluginDir:
-        required: true
-        type: string
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
         description: 'The GitHub Personal Access Token'
       ANTHROPIC_API_KEY:
         required: false
-        description: 'The API Key for Athropics API'
+        description: 'The API Key for Anthropics API'
 
 jobs:
   ai-code-review:
