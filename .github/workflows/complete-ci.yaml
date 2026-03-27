@@ -99,7 +99,7 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
   composer-install:
-    name: Copmoser Install
+    name: Composer Install
     needs: [determine-reqs]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-5990-ci-workflow
     strategy:
