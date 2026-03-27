@@ -93,7 +93,6 @@ jobs:
   ai-code-review:
     name: AI Code Review
     needs: [ determine-reqs ]
-    if: false
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@mtc-5990-ci-workflow
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
