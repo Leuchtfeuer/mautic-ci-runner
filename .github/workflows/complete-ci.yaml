@@ -45,11 +45,11 @@ on:
 
 jobs:
   determine-reqs:
-    name: Determine requirements
+    name: Get requirements
     runs-on: ubuntu-latest
     outputs:
       UNIT: ${{ steps.directories.outputs.UNIT }}
-      FUNCTIONAL: ${{ steps.mauticVersions.outputs.FUNCTIONAL }}
+      FUNCTIONAL: ${{ steps.directories.outputs.FUNCTIONAL }}
       mauticVersions: ${{ steps.mauticVersions.outputs.mauticVersions }}
       phpVersions: ${{ steps.mauticVersions.outputs.phpVersions }}
     steps:
@@ -99,7 +99,7 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
   composer-install:
-    name: Install composer dependencies
+    name: Copmoser Install
     needs: [determine-reqs]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-5990-ci-workflow
     strategy:
