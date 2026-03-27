@@ -1,4 +1,4 @@
-name: Mautic Plugin tests without DB
+name: Static Tests
 
 on:
   workflow_call:
@@ -49,7 +49,7 @@ on:
         description: 'The GitHub Personal Access Token'
 
 jobs:
-  no-db:
+  static-tests:
     runs-on: ubuntu-latest
     name: Tests on PHP ${{ inputs.phpVersion }}, Mautic ${{ inputs.mauticVersion }}
     steps:

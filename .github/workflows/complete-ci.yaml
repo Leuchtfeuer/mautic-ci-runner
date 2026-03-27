@@ -114,10 +114,10 @@ jobs:
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-  no-db:
-    name: Tests w/o DB
+  static-tests:
+    name: Static Tests
     needs: [determine-reqs, composer-install]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/no-db.yaml@mtc-5990-ci-workflow
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@mtc-5990-ci-workflow
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
