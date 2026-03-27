@@ -20,6 +20,21 @@ on:
         default: ''
         type: string
         description: 'Additional composer requirements'
+      skipRector:
+        required: false
+        type: boolean
+        default: false
+        description: "Should Rector be skipped?"
+      skipCS:
+        required: false
+        type: boolean
+        default: false
+        description: "Should CSFixer be skipped?"
+      skipPhpStan:
+        required: false
+        type: boolean
+        default: false
+        description: "Should PHPSTAN be skipped?"
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
@@ -114,7 +129,9 @@ jobs:
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
-      composerCacheDir: ${{ needs.composer-install.outputs.composer-cache-dir }}
+      skipRector: ${{ inputs.skipRector }}
+      skipCS: ${{ inputs.skipCS }}
+      skipPhpStan: ${{ inputs.skipPhpStan }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -133,7 +150,6 @@ jobs:
       pluginDir: ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
-      composerCacheDir: ${{ needs.composer-install.outputs.composer-cache-dir }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -152,7 +168,6 @@ jobs:
       pluginDir:  ${{ inputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
-      composerCacheDir: ${{ needs.composer-install.outputs.composer-cache-dir }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
