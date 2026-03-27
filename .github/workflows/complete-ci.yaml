@@ -60,8 +60,8 @@ jobs:
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
-          sparse-checkout: ciFiles
-          path: ciFiles
+          sparse-checkout: globalSettings
+          path: globalSettings
       - name: Check Test directory
         id: directories
         run: | 
@@ -70,8 +70,8 @@ jobs:
       - name: Get Mautic Versions
         id: mauticVersions
         run: |
-          echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
-          echo "phpVersions=$(grep '^${{ inputs.mauticVersion }}' ciFiles/ciFiles/versionMatching.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
+          echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
+          echo "phpVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
 
   check-dod:
     name: Check DoD
