@@ -62,7 +62,7 @@ jobs:
       - name: Check for No CI
         id: NOCI
         run: |
-          msg=$(gh api /repos/Leuchtfeuer/mautic-DataBridge-bundle/commits/${{ github.event.pull_request.head.sha }} | jq -r '.commit.message' |grep 'NO CI')
+          msg=$(gh api /repos/Leuchtfeuer/${{ github.repository }}/commits/${{ github.event.pull_request.head.sha }} | jq -r '.commit.message' |grep 'NO CI')
           if [ -z $msg ]; then echo "NOCI=1" >> "$GITHUB_OUTPUT"; fi
   determine-reqs:
     name: Get requirements
