@@ -35,6 +35,11 @@ on:
         type: boolean
         default: false
         description: "Should PHPSTAN be skipped?"
+      skipCodeReview:
+        required: false
+        type: boolean
+        default: false
+        description: "Should AI Code Review be skipped?"
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
@@ -92,6 +97,7 @@ jobs:
 
   ai-code-review:
     name: AI Code Review
+    if: ${{ inputs.skipCodeReview == false }}
     needs: [ determine-reqs ]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@mtc-5990-ci-workflow
     secrets:
