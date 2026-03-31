@@ -51,7 +51,7 @@ on:
 jobs:
   static-tests:
     runs-on: ubuntu-latest
-    name: Tests on PHP ${{ inputs.phpVersion }}, Mautic ${{ inputs.mauticVersion }}
+    name: Static Tests; PHP ${{ inputs.phpVersion }}, Mautic ${{ inputs.mauticVersion }}
     steps:
       - name: Checkout Mautic
         uses: actions/checkout@v4

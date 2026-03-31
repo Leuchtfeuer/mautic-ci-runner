@@ -38,7 +38,7 @@ jobs:
   phpunit:
     runs-on: ubuntu-latest
 
-    name: Tests on PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
+    name: Unit Tests; PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
 
     steps:
       - name: Checkout Mautic

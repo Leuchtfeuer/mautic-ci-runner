@@ -40,7 +40,7 @@ jobs:
       matrix:
         db-types: ['mysql','mariadb']
 
-    name: Tests on PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
+    name: Functional Tests; PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
 
     services:
       database:
