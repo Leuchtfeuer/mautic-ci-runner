@@ -12,6 +12,11 @@ on:
         default: 'ubuntu-latest'
         type: string
         description: 'The GitHub runner to be used'
+      pluginDir:
+        required: false
+        default: ''
+        type: string
+        description: 'NOT NEEDED; only here for compatibility'
       additionalRequirements:
         required: false
         default: ''
