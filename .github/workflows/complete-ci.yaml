@@ -51,8 +51,21 @@ on:
         description: 'The API Key for Anthropics API'
 
 jobs:
+  check-commit:
+    name: Check commit for Skip flag
+    runs-on: ubuntu-latest
+    outputs:
+      NOCI: ${{ steps.NOCI.outputs.NOCI }}
+    steps:
+      - name: Check for No CI
+        id: NOCI
+        run: |
+          msg=$(gh api /repos/Leuchtfeuer/mautic-DataBridge-bundle/commits/${{ github.event.pull_request.head.sha }} | jq -r '.commit.message' |grep 'NO CI')
+          if [ -z $msg ]; then echo "NOCI=1" >> "$GITHUB_OUTPUT"; fi
   determine-reqs:
     name: Get requirements
+    needs: [check-commit]
+    if: ${{ needs.check-commit.outputs.NOCI != 1 }}
     runs-on: ubuntu-latest
     outputs:
       UNIT: ${{ steps.directories.outputs.UNIT }}
