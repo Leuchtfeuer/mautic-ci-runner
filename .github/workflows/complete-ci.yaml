@@ -12,9 +12,6 @@ on:
         default: 'ubuntu-latest'
         type: string
         description: 'The GitHub runner to be used'
-      pluginDir:
-        required: true
-        type: string
       additionalRequirements:
         required: false
         default: ''
