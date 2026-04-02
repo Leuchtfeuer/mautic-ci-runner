@@ -93,12 +93,14 @@ jobs:
         if: ${{ inputs.skipCS != true }}
         run: bin/php-cs-fixer fix ${{ inputs.pluginDir }} --config=.php-cs-fixer.php -v --dry-run --show-progress=dots --diff
 
+      - name: Copy phpstan.neon if needed
+        run: |
+          if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then cp ${{ inputs.pluginDir }}/phpstan.neon .
+          fi
+
       - name: PHPSTAN
         if: ${{ inputs.skipPhpStan != true }}
-        run: |
-          if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then bin/phpstan analyse -c ${{ inputs.pluginDir }}/phpstan.neon
-          else composer phpstan -- ${{ inputs.pluginDir }}
-          fi
+        run: composer phpstan -- ${{ inputs.pluginDir }}
 
       - name: Rector
         if: ${{ inputs.skipRector != true }}
