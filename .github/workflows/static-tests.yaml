@@ -95,7 +95,7 @@ jobs:
 
       - name: PHPSTAN
         if: ${{ inputs.skipPhpStan != true }}
-        run: composer phpstan -- ${{ inputs.pluginDir }}
+        run: composer phpstan -- ${{ inputs.pluginDir }} -c ${{ inputs.pluginDir }}/phpstan.neon
 
       - name: Rector
         if: ${{ inputs.skipRector != true }}
