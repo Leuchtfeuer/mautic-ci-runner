@@ -89,10 +89,14 @@ jobs:
       - name: Run PHPUNIT tests
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-clover=${{ inputs.pluginDir }}/coverage.xml --coverage-text --testsuite unit
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --testsuite unit
 
-      - name: Upload logs as artifacts
-        uses: actions/upload-artifact@v4
+      - name: Code Coverage
+        uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          name: mautic-logs-php${{ inputs.phpVersion }}-${{ matrix.db-types }}-mautic${{ inputs.mauticVersion }}
-          path: var/logs/
+          filename: coverage.xml
+          badge: true
+          format: 'markdown'
+          output: 'both'
+      - name: Write to Job Summary
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
