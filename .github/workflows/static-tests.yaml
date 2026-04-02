@@ -96,7 +96,7 @@ jobs:
       - name: PHPSTAN
         if: ${{ inputs.skipPhpStan != true }}
         run: |
-          if [ -e ${{ inputs.pluginDir }}/phpstan.neon]; then bin/phpstan analyse -c ${{ inputs.pluginDir }}/phpstan.neon
+          if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then bin/phpstan analyse -c ${{ inputs.pluginDir }}/phpstan.neon
           else composer phpstan -- ${{ inputs.pluginDir }}
           fi
 
