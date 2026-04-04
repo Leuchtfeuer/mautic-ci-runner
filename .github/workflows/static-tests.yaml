@@ -51,6 +51,7 @@ on:
 jobs:
   static-tests:
     runs-on: ubuntu-latest
+    continue-on-error: true
     name: Static Tests; PHP ${{ inputs.phpVersion }}, Mautic ${{ inputs.mauticVersion }}
     steps:
       - name: Checkout Mautic

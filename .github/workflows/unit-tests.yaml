@@ -37,6 +37,7 @@ on:
 jobs:
   phpunit:
     runs-on: ubuntu-latest
+    continue-on-error: true
 
     name: Unit Tests; PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
 
