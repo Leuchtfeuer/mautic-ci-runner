@@ -1,0 +1,103 @@
+name: Mautic Plugin tests
+
+on:
+  workflow_call:
+    inputs:
+      mauticVersion:
+        required: true
+        type: string
+        description: "Mautic Version"
+      phpVersion:
+        required: true
+        type: string
+        description: "PHP Version"
+      runner:
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+        description: 'The GitHub runner to be used'
+      pluginDir:
+        required: true
+        type: string
+        description: "Plugin installation directory"
+      additionalRequirements:
+        required: false
+        default: ''
+        type: string
+        description: 'Additional composer requirements'
+      composerCacheKey:
+        required: true
+        type: string
+        description: "Key for Composer Cache"
+    secrets:
+      PERSONAL_ACCESS_TOKEN:
+        required: false
+        description: 'The GitHub Personal Access Token'
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    name: Unit Tests; PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
+
+    steps:
+      - name: Checkout Mautic
+        uses: actions/checkout@v4
+        with:
+          repository: mautic/mautic
+          ref: ${{ inputs.mauticVersion }}
+
+      - name: Checkout this plugin
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.pluginDir }}
+
+      - name: Checkout required ci files
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: ciFiles
+          path: ciFiles
+
+      - name: Copy phpunit.xml
+        run: cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
+
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.phpVersion }}
+          ini-values: -dpcov.enabled=0, pcov.directory=."
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+          coverage: pcov
+
+      - name: Set SYMFONY_ENV to test
+        run: |
+          echo "SYMFONY_ENV=test" >> $GITHUB_ENV
+          echo "MAUTIC_ENV=test" >> $GITHUB_ENV
+          echo "MAUTIC_TABLE_PREFIX=mautic_" >> $GITHUB_ENV
+
+      - name: Restore Cache
+        uses: actions/cache/restore@v4
+        id: cache-restore-composer
+        with:
+          path: |
+            bin
+            vendor
+          key: ${{ inputs.composerCacheKey }}
+
+      - name: Run PHPUNIT tests
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --testsuite unit
+
+      - name: Code Coverage
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          badge: true
+          format: 'markdown'
+          output: 'both'
+      - name: Write to Job Summary
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY

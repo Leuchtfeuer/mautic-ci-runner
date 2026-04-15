@@ -1,0 +1,117 @@
+name: Static Tests
+
+on:
+  workflow_call:
+    inputs:
+      mauticVersion:
+        required: true
+        type: string
+        description: "Mautic Version"
+      phpVersion:
+        required: true
+        type: string
+        description: "PHP Version"
+      runner:
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+        description: 'The GitHub runner to be used'
+      pluginDir:
+        required: true
+        type: string
+      additionalRequirements:
+        required: false
+        default: ''
+        type: string
+        description: 'Additional composer requirements'
+      composerCacheKey:
+        required: true
+        type: string
+        description: "Key for Composer Cache"
+      skipRector:
+        required: false
+        type: boolean
+        default: false
+        description: "Should Rector be skipped?"
+      skipCS:
+        required: false
+        type: boolean
+        default: false
+        description: "Should CSFixer be skipped?"
+      skipPhpStan:
+        required: false
+        type: boolean
+        default: false
+        description: "Should PHPSTAN be skipped?"
+    secrets:
+      PERSONAL_ACCESS_TOKEN:
+        required: false
+        description: 'The GitHub Personal Access Token'
+
+jobs:
+  static-tests:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    name: Static Tests; PHP ${{ inputs.phpVersion }}, Mautic ${{ inputs.mauticVersion }}
+    steps:
+      - name: Checkout Mautic
+        uses: actions/checkout@v4
+        with:
+          repository: mautic/mautic
+          ref: ${{ inputs.mauticVersion }}
+
+      - name: Checkout this plugin
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.pluginDir }}
+
+      - name: Checkout required ci files
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: ciFiles
+          path: ciFiles
+
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.phpVersion }}
+          ini-values: -dpcov.enabled=0, pcov.directory=."
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+          coverage: pcov
+
+      - name: Restore Cache
+        uses: actions/cache/restore@v4
+        id: cache-restore-composer
+        with:
+          path: |
+            bin
+            vendor
+          key: ${{ inputs.composerCacheKey }}
+
+      - name: Run Code Style check
+        if: ${{ inputs.skipCS != true }}
+        run: bin/php-cs-fixer fix ${{ inputs.pluginDir }} --config=.php-cs-fixer.php -v --dry-run --show-progress=dots --diff
+
+#      - name: Copy phpstan.neon if needed
+#        run: |
+#          if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then cp ${{ inputs.pluginDir }}/phpstan.neon .
+#          fi
+
+      - name: PHPSTAN
+        if: ${{ inputs.skipPhpStan != true }}
+        run: composer phpstan -- ${{ inputs.pluginDir }}
+
+      - name: Rector
+        if: ${{ inputs.skipRector != true }}
+        run: composer rector -- --dry-run --no-progress-bar ${{ inputs.pluginDir }}
+
+      - name: Twig Lint
+        run: bin/console lint:twig ${{ inputs.pluginDir }}
+
+      - name: Upload logs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mautic-logs-php${{ inputs.phpVersion }}-mautic${{ inputs.mauticVersion }}
+          path: var/logs/

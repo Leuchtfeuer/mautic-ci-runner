@@ -1,0 +1,73 @@
+name: AI Code Review
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+        description: 'The GitHub runner to be used'
+    secrets:
+      PERSONAL_ACCESS_TOKEN:
+        required: false
+        description: 'The GitHub Personal Access Token'
+      ANTHROPIC_API_KEY:
+        required: false
+        description: 'The API Key for Anthropics API'
+
+jobs:
+  ai-code-review:
+    name: Code review with claude.ai
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: false
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true # ✨ Enables tracking comments
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            
+            Review this pull request. Be concise — avoid lengthy explanations. Focus only on what matters.
+            
+            Review areas:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Security implications
+            - Performance considerations
+            
+            Ignore:
+            - Timestamps in composer.lock (auto-generated).
+            
+            Note: The PR branch is already checked out in the current working directory.
+            
+            Commenting rules:
+            - Use `mcp__github_inline_comment__create_inline_comment` when an issue is tied to a specific line of code (e.g. a bug, a security flaw, a logic error). Keep the inline comment to one sentence.
+            - Use `gh pr comment` for everything else: overall feedback, summaries, and grouped suggestions that span multiple files or have no single line to attach to.
+            
+            Formatting of the top-level PR comment (via `gh pr comment`):
+            1. For each **critical or important** issue already posted as an inline comment: reference it with one short bullet (file + brief description) so it appears in the summary too.
+            2. For **optional or non-urgent** suggestions (style, minor improvements, nice-to-haves): group them inside a collapsible HTML block at the bottom of the comment:
+               ```
+               <details>
+               <summary>Optional suggestions</summary>
+            
+               - ...
+            
+               </details>
+               ```
+            3. End the comment with a **## Action Points** section listing all required fixes as a concise checklist. Omit optional suggestions from this list.
+            
+            Only post GitHub comments — don't submit review text as messages.
+
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

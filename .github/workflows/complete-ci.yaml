@@ -1,0 +1,186 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      mauticVersion:
+        required: true
+        type: string
+        description: "The Mautic MAJOR version"
+      runner:
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+        description: 'The GitHub runner to be used'
+      pluginDir:
+        required: false
+        default: ''
+        type: string
+        description: 'NOT NEEDED; only here for compatibility'
+      additionalRequirements:
+        required: false
+        default: ''
+        type: string
+        description: 'Additional composer requirements'
+      skipRector:
+        required: false
+        type: boolean
+        default: false
+        description: "Should Rector be skipped?"
+      skipCS:
+        required: false
+        type: boolean
+        default: false
+        description: "Should CSFixer be skipped?"
+      skipPhpStan:
+        required: false
+        type: boolean
+        default: false
+        description: "Should PHPSTAN be skipped?"
+      skipCodeReview:
+        required: false
+        type: boolean
+        default: false
+        description: "Should AI Code Review be skipped?"
+    secrets:
+      PERSONAL_ACCESS_TOKEN:
+        required: false
+        description: 'The GitHub Personal Access Token'
+      ANTHROPIC_API_KEY:
+        required: false
+        description: 'The API Key for Anthropics API'
+
+jobs:
+  determine-reqs:
+    name: Get requirements
+    runs-on: ubuntu-latest
+    outputs:
+      UNIT: ${{ steps.directories.outputs.UNIT }}
+      FUNCTIONAL: ${{ steps.directories.outputs.FUNCTIONAL }}
+      mauticVersions: ${{ steps.mauticVersions.outputs.mauticVersions }}
+      phpVersions: ${{ steps.mauticVersions.outputs.phpVersions }}
+      pluginDir: ${{ steps.pluginDir.outputs.pluginDir }}
+    steps:
+      - name: Checkout this plugin
+        uses: actions/checkout@v4
+      - name: Checkout required ci files
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: globalSettings
+          path: globalSettings
+      - name: Get Plugin Directory
+        id: pluginDir
+        run: |
+          DIRECTORY=$(grep "install-directory-name" composer.json | cut -d'"' -f4)
+          echo "pluginDir=$(echo 'plugins/'$DIRECTORY)" >> "$GITHUB_OUTPUT"
+      - name: Check Test directory
+        id: directories
+        run: | 
+          if [ -d ./Tests/Unit ]; then echo "UNIT=1" >> "$GITHUB_OUTPUT"; else echo "UNIT=0" >> "$GITHUB_OUTPUT"; fi
+          if [ -d ./Tests/Functional ]; then echo "FUNCTIONAL=1" >> "$GITHUB_OUTPUT"; else echo "FUNCTIONAL=0" >> "$GITHUB_OUTPUT"; fi
+      - name: Get Mautic Versions
+        id: mauticVersions
+        run: |
+          echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
+          echo "phpVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
+
+  check-dod:
+    name: Check DoD
+    needs: [ determine-reqs ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this plugin
+        uses: actions/checkout@v4
+      - name: Checkout required ci files
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: checkDod.sh
+          path: checkDod
+      - name: Run CheckDod
+        run: bash checkDod/checkDod.sh
+
+  ai-code-review:
+    name: AI Code Review
+    if: ${{ inputs.skipCodeReview == false }}
+    needs: [ determine-reqs ]
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@mtc-5990-ci-workflow
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  composer-install:
+    name: Composer Install
+    needs: [determine-reqs]
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-5990-ci-workflow
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
+    with:
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
+      pluginDir:  ${{ needs.determine-reqs.outputs.pluginDir }}
+      additionalRequirements: ${{ inputs.additionalRequirements }}
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+  static-tests:
+    name: Static Tests
+    needs: [determine-reqs, composer-install]
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@mtc-5990-ci-workflow
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
+    with:
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
+      pluginDir:  ${{ needs.determine-reqs.outputs.pluginDir }}
+      additionalRequirements: ${{ inputs.additionalRequirements }}
+      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
+      skipRector: ${{ inputs.skipRector }}
+      skipCS: ${{ inputs.skipCS }}
+      skipPhpStan: ${{ inputs.skipPhpStan }}
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+  unit-tests:
+    name: Unit Tests
+    needs: [determine-reqs,  composer-install ]
+    if: ${{ needs.determine-reqs.outputs.UNIT == 1 }}
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@mtc-5990-ci-workflow
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
+    with:
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
+      pluginDir:  ${{ needs.determine-reqs.outputs.pluginDir }}
+      additionalRequirements: ${{ inputs.additionalRequirements }}
+      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+  functional-tests:
+    name: Functional Tests
+    needs: [determine-reqs, composer-install]
+    if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-5990-ci-workflow
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
+    with:
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
+      pluginDir:  ${{ needs.determine-reqs.outputs.pluginDir }}
+      additionalRequirements: ${{ inputs.additionalRequirements }}
+      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
