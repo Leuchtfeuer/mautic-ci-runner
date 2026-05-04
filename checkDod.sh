@@ -199,7 +199,7 @@ if [[ "$PLUGIN" == "mautic-plugin" ]]; then
   KEYWORDS+=('plugin' 'integration')      # additional to the previous one
   AUTHORS=("name\": \"$CR" 'homepage": "https://Leuchtfeuer.com/mautic/' 'role": "Developer' 'email": "mautic-plugins@leuchtfeuer.com')
                                           # keywords that needs to exist in the "Author"-Options in composer.json
-  LICENSE="GPL-3\.0-or-later"
+  LICENSE="GPL-3\.0"
   AUTOLOAD="psr-4"                        # "autoload"-Option needs this value in composer.json
   CONFIG="Config/config.php"              # location of config.php
 elif [[ "$PLUGIN" == "mautic-theme" ]]; then
