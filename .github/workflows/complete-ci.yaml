@@ -83,8 +83,10 @@ jobs:
       - name: Get Mautic Versions
         id: mauticVersions
         run: |
-          echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
-          echo "phpVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
+          mauticMajorVersion=$(echo -n '${{ GITHUB.HEAD_REF }}' | tail -c1 )
+          echo "$mauticMajorVersion"
+          echo "mauticVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
+          echo "phpVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
 
   check-dod:
     name: Check DoD
