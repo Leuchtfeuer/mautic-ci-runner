@@ -83,7 +83,7 @@ jobs:
       - name: Get Mautic Versions
         id: mauticVersions
         run: |
-          mauticMajorVersion=$(echo -n '${{ GITHUB.REF }}' | tail -c1 )
+          mauticMajorVersion=$(echo -n '${{ github.event.pull_request.base.ref }}' | tail -c1 )
           echo "$mauticMajorVersion"
           echo "mauticVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
           echo "phpVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
