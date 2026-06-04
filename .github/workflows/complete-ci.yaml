@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       mauticVersion:
-        required: true
+        required: false
         type: string
         description: "The Mautic MAJOR version"
       runner:
