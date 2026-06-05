@@ -109,7 +109,7 @@ jobs:
     name: AI Code Review
     if: ${{ inputs.skipCodeReview == false }}
     needs: [ determine-reqs ]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@mtc-10784-fix-cr
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@main
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
