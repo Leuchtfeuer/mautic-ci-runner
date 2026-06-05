@@ -102,7 +102,6 @@ jobs:
         run: |
           echo "SYMFONY_ENV=test" >> $GITHUB_ENV
           echo "MAUTIC_ENV=test" >> $GITHUB_ENV
-          echo "MAUTIC_TABLE_PREFIX=mautic_" >> $GITHUB_ENV
 
       - name: Restore Cache
         uses: actions/cache/restore@v4
