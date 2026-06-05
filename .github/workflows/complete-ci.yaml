@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       mauticVersion:
-        required: true
+        required: false
         type: string
         description: "The Mautic MAJOR version"
       runner:
@@ -83,8 +83,10 @@ jobs:
       - name: Get Mautic Versions
         id: mauticVersions
         run: |
-          echo "mauticVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
-          echo "phpVersions=$(grep '^${{ inputs.mauticVersion }}' globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
+          mauticMajorVersion=$(echo -n '${{ github.event.pull_request.base.ref }}' | tail -c1 )
+          echo "$mauticMajorVersion"
+          echo "mauticVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
+          echo "phpVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
 
   check-dod:
     name: Check DoD
@@ -109,7 +111,7 @@ jobs:
     needs: [ determine-reqs ]
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@main
     secrets:
-      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
   composer-install:
