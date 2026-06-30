@@ -135,7 +135,7 @@ jobs:
       - name: Run PHPUNIT tests
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --testsuite functional
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --exclude-testsuite unit
 
       - name: Code Coverage
         uses: irongut/CodeCoverageSummary@v1.3.0
