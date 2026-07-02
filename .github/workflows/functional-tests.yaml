@@ -132,7 +132,14 @@ jobs:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: php bin/console mautic:plugins:install --env=dev
 
-      - name: Run PHPUNIT tests
+      - name: Run Non-Unit tests (M5) #this part is required for compatibility and can be removed once M5 is obsolete
+        if: ${{ inputs.mauticVersion == 5 }}
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml
+
+      - name: Run Non-Unit tests (M7)
+        if: ${{ inputs.mauticVersion != 7 }}
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --exclude-testsuite unit
