@@ -81,7 +81,7 @@ jobs:
           path: ciFiles
 
       - name: Copy phpunit.xml
-        run: cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
+        run: cp -n ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }} # do not overwrite xml file if already present
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
