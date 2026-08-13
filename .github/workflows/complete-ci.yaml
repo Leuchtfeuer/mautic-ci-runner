@@ -62,9 +62,9 @@ jobs:
       pluginDir: ${{ steps.pluginDir.outputs.pluginDir }}
     steps:
       - name: Checkout this plugin
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Checkout required ci files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
@@ -94,9 +94,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this plugin
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Checkout required ci files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner

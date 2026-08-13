@@ -55,18 +55,18 @@ jobs:
     name: Static Tests; PHP ${{ inputs.phpVersion }}, Mautic ${{ inputs.mauticVersion }}
     steps:
       - name: Checkout Mautic
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: mautic/mautic
           ref: ${{ inputs.mauticVersion }}
 
       - name: Checkout this plugin
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ${{ inputs.pluginDir }}
 
       - name: Checkout required ci files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
@@ -98,11 +98,6 @@ jobs:
         run: |
           if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then cp ${{ inputs.pluginDir }}/phpstan.neon .
           fi
-          pwd
-          ls -la
-          ls -la vendor
-          ls -la vendor/phpstan
-          ls -la vendor/phpstan/phpstan-strict-rules
 
       - name: PHPSTAN
         if: ${{ inputs.skipPhpStan != true }}
