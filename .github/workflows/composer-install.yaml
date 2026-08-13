@@ -91,13 +91,13 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
           coverage: pcov
 
-      #- name: Install Composer dependencies
-      #  if: steps.cache-restore-composer.outputs.cache-hit != 'true'
-      #  run: composer install
-
-      - name: Install additional dependencies
+      - name: Install Composer dependencies
         if: steps.cache-restore-composer.outputs.cache-hit != 'true'
-        run: composer require "phpstan/phpstan-strict-rules" --no-interaction
+        run: composer install
+
+      #- name: Install additional dependencies
+      #  if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+       # run: composer require "phpstan/phpstan-strict-rules" --no-interaction
 
       - name: Add plugin dependencies
         if: inputs.additionalRequirements != '' && steps.cache-restore-composer.outputs.cache-hit != 'true'
