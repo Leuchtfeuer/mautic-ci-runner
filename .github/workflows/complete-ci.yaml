@@ -117,7 +117,7 @@ jobs:
   composer-install:
     name: Composer Install
     needs: [determine-reqs]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-11163-phpstan-neon
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
