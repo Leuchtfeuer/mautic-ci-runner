@@ -100,6 +100,9 @@ jobs:
           fi
           pwd
           ls -la
+          ls -la vendor
+          ls -la vendor/phpstan
+          ls -la vendor/phpstan/phpstan-strict-rules
 
       - name: PHPSTAN
         if: ${{ inputs.skipPhpStan != true }}
