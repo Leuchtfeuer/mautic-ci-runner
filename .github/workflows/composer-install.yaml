@@ -93,9 +93,11 @@ jobs:
 
       - name: Install Composer dependencies
         if: steps.cache-restore-composer.outputs.cache-hit != 'true'
-        run: |
-          composer install
-          composer install "phpstan/phpstan-strict-rules" --no-interaction
+        run: composer install
+
+      - name: Install additional dependencies
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        run: composer install "phpstan/phpstan-strict-rules" --no-interaction
 
       - name: Add plugin dependencies
         if: inputs.additionalRequirements != '' && steps.cache-restore-composer.outputs.cache-hit != 'true'
