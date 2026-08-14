@@ -98,6 +98,7 @@ jobs:
         run: |
           if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then cp ${{ inputs.pluginDir }}/phpstan.neon .
           fi
+          ls -la app/config
           mkdir -p vendor/mautic/core-lib/config
           ln -s app/config/config_test.php vendor/mautic/core-lib/config/config_test.php
 
