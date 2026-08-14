@@ -96,11 +96,11 @@ jobs:
 
       - name: Copy phpstan.neon if needed
         run: |
-          if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then cp ${{ inputs.pluginDir }}/phpstan.neon .
+          if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then
+            cp ${{ inputs.pluginDir }}/phpstan.neon .
+            sed -i 's|vendor/mautic/core-lib|app|g' phpstan.neon
+            cat phpstan.neon
           fi
-          ls -la app/config
-          mkdir -p vendor/mautic/core-lib/config
-          ln -s app/config/config_test.php vendor/mautic/core-lib/config/config_test.php
 
       - name: PHPSTAN
         if: ${{ inputs.skipPhpStan != true }}
