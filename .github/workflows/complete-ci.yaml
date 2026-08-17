@@ -87,6 +87,11 @@ jobs:
           echo "$mauticMajorVersion"
           echo "mauticVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
           echo "phpVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
+      - name: Check for Custom Setup & Tests
+        id: customSetupTests
+        run: |
+          if [ -n $(find .github/custom_setup/*.sh -maxdepth 0) ]; then echo "CUSTOM_SETUP=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_SETUP=0" >> "$GITHUB_OUTPUT"; fi
+          if [ -n $(find .github/custom_tests/*.sh -maxdepth 0) ]; then echo "CUSTOM_TESTS=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_TESTS=0" >> "$GITHUB_OUTPUT"; fi
 
   check-dod:
     name: Check DoD
@@ -183,6 +188,19 @@ jobs:
       pluginDir:  ${{ needs.determine-reqs.outputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
+      customSetup: ${{ needs.determine-reqs.outputs.CUSTOM_SETUP }}
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+  custom-tests:
+    name: Custom Tests
+    needs: [ determine-reqs, composer-install ]
+    if: ${{ needs.determine-reqs.outputs.CUSTOM_TESTS == 1 }}
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@mtc-11409-custom-tests
+    with:
+      mauticVersion: ${{ matrix.mauticVersion }}
+      phpVersion: ${{ matrix.phpVersion }}
+      pluginDir: ${{ needs.determine-reqs.outputs.pluginDir }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
