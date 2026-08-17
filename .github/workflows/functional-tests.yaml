@@ -90,12 +90,15 @@ jobs:
 
       - name: Custom Setup for Tests (2/2)
         run: |
+          ls -la ciFiles
+          ls -la ciFiles/.github
+          ls -la ciFiles/.github/custom_setup
           find . -type f -iname 'ciFiles/.github/custom_setup/*.sh' | while read -r -d '' script; do
             bash script
           done
 
       - name: Copy phpunit.xml
-        run: cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
+        run: [ -f "ciFiles/ciFiles/phpunit.xml" ] && cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
