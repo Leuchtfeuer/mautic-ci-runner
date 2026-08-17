@@ -172,7 +172,7 @@ jobs:
     name: Functional Tests
     needs: [determine-reqs, composer-install]
     if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-11409-custom-tests
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
