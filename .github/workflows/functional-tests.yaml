@@ -80,6 +80,20 @@ jobs:
           sparse-checkout: ciFiles
           path: ciFiles
 
+      - name: Custom Setup for Tests (1/2)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: .github/custom_setup
+          path: ciFiles
+
+      - name: Custom Setup for Tests (2/2)
+        run: |
+          find . -type f -iname 'ciFiles/.github/custom_setup/*.sh' | while read -r -d '' script; do
+            bash script
+          done
+
       - name: Copy phpunit.xml
         run: cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
 
