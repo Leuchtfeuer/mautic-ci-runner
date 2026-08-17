@@ -91,11 +91,9 @@ jobs:
 
       - name: Custom Setup for Tests (2/2)
         run: |
-          ls -la ciFiles
-          ls -la ciFiles/.github
-          ls -la ciFiles/.github/custom_setup
-          find . -type f -iname 'ciFiles/.github/custom_setup/*.sh' | while read -r -d '' script; do
-            bash script
+          cp ciFiles/.github/custom_setup/* .
+          find . -type f -ipath 'ciFiles/.github/custom_setup/*.sh' -print0 | while IFS= read -r -d '' script; do
+            bash "$script"
           done
 
       - name: Copy phpunit.xml
