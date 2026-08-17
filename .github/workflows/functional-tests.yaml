@@ -87,7 +87,7 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: .github/custom_setup
           path: ciFiles
-          ref: mtc-11409-custom-tests
+          ref: PatrickJenkner-patch-1
 
       - name: Custom Setup for Tests (2/2)
         run: |
@@ -100,7 +100,7 @@ jobs:
 
       - name: Copy phpunit.xml
         run: |
-          [ -f "ciFiles/ciFiles/phpunit.xml" ] && cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
+          if [ -f "ciFiles/ciFiles/phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
