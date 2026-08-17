@@ -98,7 +98,8 @@ jobs:
           done
 
       - name: Copy phpunit.xml
-        run: [ -f "ciFiles/ciFiles/phpunit.xml" ] && cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
+        run: |
+          [ -f "ciFiles/ciFiles/phpunit.xml" ] && cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
