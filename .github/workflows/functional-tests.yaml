@@ -31,7 +31,7 @@ on:
       customSetup:
         required: false
         default: 0
-        type: boolean
+        type: number
         description: 'Is custom setup required for tests?'
     secrets:
       PERSONAL_ACCESS_TOKEN:
