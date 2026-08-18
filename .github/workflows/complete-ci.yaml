@@ -201,7 +201,7 @@ jobs:
       pluginDir:  ${{ needs.determine-reqs.outputs.pluginDir }}
       additionalRequirements: ${{ inputs.additionalRequirements }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
-      customSetup: ${{ needs.determine-reqs.outputs.CUSTOM_SETUP }}
+      customSetup: ${{ fromJSON(needs.determine-reqs.outputs.CUSTOM_SETUP) }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 

@@ -145,7 +145,6 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: .github/custom_setup
           path: ciFiles
-          ref: mtc-11409-custom-tests
       - name: Custom Setup for Tests (2/2)
         if: ${{ inputs.customSetup == 1 }}
         run: |
