@@ -33,7 +33,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: .github/custom_tests
           path: ciFiles
           ref: mtc-11409-custom-tests #TODO: Remove (dev-only)

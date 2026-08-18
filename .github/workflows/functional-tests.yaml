@@ -142,7 +142,6 @@ jobs:
         if: ${{ inputs.customSetup == 1 }}
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: .github/custom_setup
           path: ciFiles
           ref: mtc-11409-custom-tests #TODO: Remove (dev-only)
