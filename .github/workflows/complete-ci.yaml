@@ -64,9 +64,9 @@ jobs:
       CUSTOM_TESTS: ${{ steps.customSetupTests.outputs.CUSTOM_TESTS }}
     steps:
       - name: Checkout this plugin
-        uses: actions/checkout@v4
-      - name: Checkout required ci files (1/2)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: Checkout required ci files
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
@@ -110,9 +110,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this plugin
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Checkout required ci files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
@@ -133,7 +133,7 @@ jobs:
   composer-install:
     name: Composer Install
     needs: [determine-reqs]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@mtc-11163-phpstan-neon
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -149,7 +149,7 @@ jobs:
   static-tests:
     name: Static Tests
     needs: [determine-reqs, composer-install]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@mtc-11163-phpstan-neon
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
