@@ -35,8 +35,6 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           sparse-checkout: .github/custom_tests
           path: ciFiles
-          ref: mtc-11409-custom-tests #TODO: Remove (dev-only)
-
 
       - name: Run custom tests
         run: |

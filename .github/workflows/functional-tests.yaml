@@ -83,7 +83,6 @@ jobs:
           sparse-checkout: ciFiles
           path: ciFiles
 
-
       - name: Copy phpunit.xml
         run: |
           if [ -f "ciFiles/ciFiles/phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
@@ -102,7 +101,6 @@ jobs:
           mysqldump --print-defaults
           cp .github/ci-files/.my.cnf ~/.my.cnf
           mysqldump --print-defaults
-
       - name: Set SYMFONY_ENV to test
         run: |
           echo "SYMFONY_ENV=test" >> $GITHUB_ENV
@@ -144,7 +142,6 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           sparse-checkout: .github/custom_setup
           path: ciFiles
-          ref: mtc-11409-custom-tests #TODO: Remove (dev-only)
       - name: Custom Setup for Tests (2/2)
         if: ${{ inputs.customSetup == 1 }}
         run: |

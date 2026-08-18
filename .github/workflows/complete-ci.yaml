@@ -80,7 +80,6 @@ jobs:
             .github/custom_setup
             .github/custom_tests
           path: ciFiles
-          ref: mtc-11409-custom-tests
 
       - name: Get Plugin Directory
         id: pluginDir
