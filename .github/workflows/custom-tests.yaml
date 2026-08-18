@@ -36,7 +36,7 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: .github/custom_tests
           path: ciFiles
-          ref: mtc-11409-custom-tests
+          ref: mtc-11409-custom-tests #TODO: Remove (dev-only)
 
       - name: Run custom tests
         run: |

@@ -123,7 +123,7 @@ jobs:
       - name: Run CheckDod
         run: bash checkDod/checkDod.sh
 
-#  ai-code-review:
+#  ai-code-review: #TODO: Re-activate (dev-only)
 #    name: AI Code Review
 #    if: ${{ inputs.skipCodeReview == false }}
 #    needs: [ determine-reqs ]
@@ -190,7 +190,7 @@ jobs:
     name: Functional Tests
     needs: [determine-reqs, composer-install]
     if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-11409-custom-tests
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-11409-custom-tests #TODO: Use correct ref (dev-only)
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -209,7 +209,7 @@ jobs:
     name: Custom Tests
     needs: [ determine-reqs, composer-install ]
     if: ${{ needs.determine-reqs.outputs.CUSTOM_TESTS == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@mtc-11409-custom-tests
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@mtc-11409-custom-tests #TODO: Use correct ref (dev-only)
     with:
       mauticVersion: ${{ matrix.mauticVersion }}
       phpVersion: ${{ matrix.phpVersion }}
