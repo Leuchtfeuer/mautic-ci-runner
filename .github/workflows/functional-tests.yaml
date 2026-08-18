@@ -71,12 +71,10 @@ jobs:
         with:
           repository: mautic/mautic
           ref: ${{ inputs.mauticVersion }}
-
       - name: Checkout this plugin
         uses: actions/checkout@v4
         with:
           path: ${{ inputs.pluginDir }}
-
       - name: Checkout required ci files
         uses: actions/checkout@v4
         with:
@@ -94,7 +92,6 @@ jobs:
           sparse-checkout: .github/custom_setup
           path: ciFiles
           ref: mtc-11409-custom-tests
-
       - name: Custom Setup for Tests (2/2)
         if: ${{ inputs.phpVersion == 1 }}
         run: |
