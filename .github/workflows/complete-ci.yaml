@@ -60,6 +60,8 @@ jobs:
       mauticVersions: ${{ steps.mauticVersions.outputs.mauticVersions }}
       phpVersions: ${{ steps.mauticVersions.outputs.phpVersions }}
       pluginDir: ${{ steps.pluginDir.outputs.pluginDir }}
+      CUSTOM_SETUP: ${{ steps.customSetupTests.outputs.CUSTOM_SETUP }}
+      CUSTOM_TESTS: ${{ steps.customSetupTests.outputs.CUSTOM_TESTS }}
     steps:
       - name: Checkout this plugin
         uses: actions/checkout@v4
