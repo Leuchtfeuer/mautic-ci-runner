@@ -39,6 +39,6 @@ jobs:
 
       - name: Run custom tests
         run: |
-          find . -type f -ipath 'ciFiles/.github/custom_tests/*.sh' -print0 | while IFS= read -r -d '' script; do
+          find ciFiles/.github/custom_tests -type f -ipath 'ciFiles/.github/custom_tests/*.sh' -print0 | while IFS= read -r -d '' script; do
             bash "$script"
           done

@@ -83,22 +83,6 @@ jobs:
           sparse-checkout: ciFiles
           path: ciFiles
 
-      - name: Custom Setup for Tests (1/2)
-        uses: actions/checkout@v4
-        if: ${{ inputs.customSetup == 1 }}
-        with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repository: Leuchtfeuer/mautic-ci-runner
-          sparse-checkout: .github/custom_setup
-          path: ciFiles
-          ref: mtc-11409-custom-tests
-      - name: Custom Setup for Tests (2/2)
-        if: ${{ inputs.customSetup == 1 }}
-        run: |
-          cp ciFiles/.github/custom_setup/* .
-          find . -type f -ipath 'ciFiles/.github/custom_setup/*.sh' -print0 | while IFS= read -r -d '' script; do
-            bash "$script"
-          done
 
       - name: Copy phpunit.xml
         run: |
@@ -152,6 +136,23 @@ jobs:
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: php bin/console mautic:plugins:install --env=dev
+
+      - name: Custom Setup for Tests (1/2)
+        uses: actions/checkout@v4
+        if: ${{ inputs.customSetup == 1 }}
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: .github/custom_setup
+          path: ciFiles
+          ref: mtc-11409-custom-tests
+      - name: Custom Setup for Tests (2/2)
+        if: ${{ inputs.customSetup == 1 }}
+        run: |
+          cp ciFiles/.github/custom_setup/* .
+          find ciFiles/.github/custom_setup -type f -ipath 'ciFiles/.github/custom_setup/*.sh' -print0 | while IFS= read -r -d '' script; do
+            bash "$script"
+          done
 
       - name: Run Non-Unit tests (M5) #this part is required for compatibility and can be removed once M5 is obsolete
         if: ${{ startsWith(inputs.mauticVersion,5) }}
