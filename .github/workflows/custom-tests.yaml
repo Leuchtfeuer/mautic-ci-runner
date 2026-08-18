@@ -36,6 +36,8 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: .github/custom_tests
           path: ciFiles
+          ref: mtc-11409-custom-tests
+
       - name: Run custom tests
         run: |
           find . -type f -iname 'ciFiles/.github/custom_tests/*.sh' | while read -r -d '' script; do
