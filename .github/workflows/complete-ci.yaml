@@ -63,27 +63,23 @@ jobs:
     steps:
       - name: Checkout this plugin
         uses: actions/checkout@v4
-      - name: Checkout required ci files (1/3)
+      - name: Checkout required ci files (1/2)
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: globalSettings
           path: globalSettings
-      - name: Checkout required ci files (2/3)
+      - name: Checkout required ci files (2/2)
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
-          sparse-checkout: .github/custom_setup
+          sparse-checkout: |
+            .github/custom_setup
+            .github/custom_tests
           path: ciFiles
-      - name: Checkout required ci files (3/3)
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repository: Leuchtfeuer/mautic-ci-runner
-          sparse-checkout: .github/custom_tests
-          path: ciFiles
+          ref: mtc-11409-custom-tests
 
       - name: Get Plugin Directory
         id: pluginDir
