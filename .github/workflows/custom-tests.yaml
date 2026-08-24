@@ -19,6 +19,10 @@ on:
       pluginDir:
         required: true
         type: string
+      composerCacheKey:
+        required: true
+        type: string
+        description: "Key for Composer Cache"
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false

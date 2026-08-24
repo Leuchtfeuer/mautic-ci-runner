@@ -212,6 +212,7 @@ jobs:
       mauticVersion: ${{ matrix.mauticVersion }}
       phpVersion: ${{ matrix.phpVersion }}
       pluginDir: ${{ needs.determine-reqs.outputs.pluginDir }}
+      composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
