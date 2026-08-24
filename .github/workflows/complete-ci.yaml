@@ -208,6 +208,10 @@ jobs:
     needs: [ determine-reqs, composer-install ]
     if: ${{ needs.determine-reqs.outputs.CUSTOM_TESTS == 1 }}
     uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@mtc-11409-custom-tests #TODO: Use correct ref (dev-only)
+    strategy:
+      matrix:
+        mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
+        phpVersion: ${{ fromJSON(needs.determine-reqs.outputs.phpVersions) }}
     with:
       mauticVersion: ${{ matrix.mauticVersion }}
       phpVersion: ${{ matrix.phpVersion }}
