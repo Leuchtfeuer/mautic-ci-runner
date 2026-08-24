@@ -30,8 +30,11 @@ on:
 
 jobs:
   determine-reqs:
-    name: Run Custom Tests
+    name: Custom Tests; PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        db-types: [ 'mysql','mariadb' ]
 
     services:
       database:
