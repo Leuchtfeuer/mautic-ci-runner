@@ -136,6 +136,8 @@ jobs:
           path: ciFiles
 
       - name: Run custom tests
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
         run: |
           find ciFiles/.github/custom_tests -type f -ipath 'ciFiles/.github/custom_tests/*.sh' -print0 | while IFS= read -r -d '' script; do
             bash "$script"
