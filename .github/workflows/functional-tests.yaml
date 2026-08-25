@@ -85,7 +85,7 @@ jobs:
 
       - name: Copy phpunit.xml
         run: |
-          if [ -f "ciFiles/ciFiles/phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
+          if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
