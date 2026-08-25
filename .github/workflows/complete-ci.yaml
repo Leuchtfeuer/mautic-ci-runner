@@ -101,8 +101,8 @@ jobs:
       - name: Check for Custom Setup & Tests
         id: customSetupTests
         run: |
-          if [ -n "$(find ciFiles/.github/custom_setup/*.sh -maxdepth 0)" ]; then echo "CUSTOM_SETUP=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_SETUP=0" >> "$GITHUB_OUTPUT"; fi
-          if [ -n "$(find ciFiles/.github/custom_tests/*.sh -maxdepth 0)" ]; then echo "CUSTOM_TESTS=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_TESTS=0" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$(find ciFiles/.github/custom_setup -maxdepth 1 -name '*.sh' 2>/dev/null)" ]; then echo "CUSTOM_SETUP=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_SETUP=0" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$(find ciFiles/.github/custom_tests -maxdepth 1 -name '*.sh' 2>/dev/null)" ]; then echo "CUSTOM_TESTS=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_TESTS=0" >> "$GITHUB_OUTPUT"; fi
 
   check-dod:
     name: Check DoD
