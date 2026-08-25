@@ -75,6 +75,11 @@ jobs:
         run: |
           if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
 
+      - name: Ensure test directories exist
+        run: |
+          mkdir -p ${{ inputs.pluginDir }}/Tests/Unit
+          mkdir -p ${{ inputs.pluginDir }}/Tests/Functional
+
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
