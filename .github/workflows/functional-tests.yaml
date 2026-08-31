@@ -71,12 +71,10 @@ jobs:
         with:
           repository: mautic/mautic
           ref: ${{ inputs.mauticVersion }}
-
       - name: Checkout this plugin
         uses: actions/checkout@v6
         with:
           path: ${{ inputs.pluginDir }}
-
       - name: Checkout required ci files
         uses: actions/checkout@v6
         with:
@@ -86,7 +84,13 @@ jobs:
           path: ciFiles
 
       - name: Copy phpunit.xml
-        run: cp -n ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }} # do not overwrite xml file if already present
+        run: |
+          if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
+
+      - name: Ensure test directories exist
+        run: |
+          mkdir -p ${{ inputs.pluginDir }}/Tests/Unit
+          mkdir -p ${{ inputs.pluginDir }}/Tests/Functional
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
@@ -102,7 +106,6 @@ jobs:
           mysqldump --print-defaults
           cp .github/ci-files/.my.cnf ~/.my.cnf
           mysqldump --print-defaults
-
       - name: Set SYMFONY_ENV to test
         run: |
           echo "SYMFONY_ENV=test" >> $GITHUB_ENV
@@ -137,17 +140,32 @@ jobs:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: php bin/console mautic:plugins:install --env=dev
 
+      - name: Custom Setup for Tests (1/2)
+        uses: actions/checkout@v4
+        if: ${{ inputs.customSetup == 1 }}
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          sparse-checkout: .github/custom_setup
+          path: ciFiles
+      - name: Custom Setup for Tests (2/2)
+        if: ${{ inputs.customSetup == 1 }}
+        run: |
+          cp ciFiles/.github/custom_setup/* .
+          find ciFiles/.github/custom_setup -type f -ipath 'ciFiles/.github/custom_setup/*.sh' -print0 | while IFS= read -r -d '' script; do
+            bash "$script"
+          done
+
       - name: Run Non-Unit tests (M5) #this part is required for compatibility and can be removed once M5 is obsolete
         if: ${{ startsWith(inputs.mauticVersion,5) }}
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --exclude-group no-ci
 
       - name: Run Non-Unit tests (M7)
         if: ${{ startsWith(inputs.mauticVersion,7) }}
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
-        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --exclude-testsuite unit
+        run: XDEBUG_MODE=coverage APP_DEBUG=0 php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~tests|themes|vendor~" bin/phpunit -d memory_limit=1G --bootstrap vendor/autoload.php --configuration ${{ inputs.pluginDir }}/phpunit.xml --coverage-cobertura=coverage.xml --exclude-testsuite unit --exclude-group no-ci
 
       - name: Code Coverage
         uses: irongut/CodeCoverageSummary@v1.3.0

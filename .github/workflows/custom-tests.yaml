@@ -19,6 +19,10 @@ on:
       pluginDir:
         required: true
         type: string
+      composerCacheKey:
+        required: true
+        type: string
+        description: "Key for Composer Cache"
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
@@ -26,19 +30,114 @@ on:
 
 jobs:
   determine-reqs:
-    name: Run Custom Tests
+    name: Custom Tests; PHP ${{ inputs.phpVersion }}, ${{ matrix.db-types }}, Mautic ${{ inputs.mauticVersion }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        db-types: [ 'mysql','mariadb' ]
+
+    services:
+      database:
+        image: ${{ matrix.db-types == 'mysql' && 'mysql:8.4' || 'mariadb:10.11' }}
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: mautictest
+        ports:
+          - 3306
+        options: >-
+          --shm-size=2gb
+          --name=${{ matrix.db-types }}
+          --tmpfs=/var/lib/mysql
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
-      - name: Copy required files
+      - name: Checkout Mautic
+        uses: actions/checkout@v6
+        with:
+          repository: mautic/mautic
+          ref: ${{ inputs.mauticVersion }}
+      - name: Checkout this plugin
+        uses: actions/checkout@v6
+        with:
+          path: ${{ inputs.pluginDir }}
+      - name: Checkout required ci files
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: Leuchtfeuer/mautic-ci-runner
+          sparse-checkout: ciFiles
+          path: ciFiles
+
+      - name: Copy phpunit.xml
+        run: |
+          if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
+
+      - name: Ensure test directories exist
+        run: |
+          mkdir -p ${{ inputs.pluginDir }}/Tests/Unit
+          mkdir -p ${{ inputs.pluginDir }}/Tests/Functional
+
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.phpVersion }}
+          ini-values: -dpcov.enabled=0, pcov.directory=."
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+          coverage: pcov
+
+      - name: add MySQL config file
+        run: |
+          mysqldump --version
+          mysqldump --print-defaults
+          cp .github/ci-files/.my.cnf ~/.my.cnf
+          mysqldump --print-defaults
+      - name: Set SYMFONY_ENV to test
+        run: |
+          echo "SYMFONY_ENV=test" >> $GITHUB_ENV
+          echo "MAUTIC_ENV=test" >> $GITHUB_ENV
+
+      - name: Restore Cache
+        uses: actions/cache/restore@v4
+        id: cache-restore-composer
+        with:
+          path: |
+            bin
+            vendor
+          key: ${{ inputs.composerCacheKey }}
+
+      - name: Install Composer dependencies
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        run: composer install
+
+      - name: Add plugin dependencies
+        if: inputs.additionalRequirements != '' && steps.cache-restore-composer.outputs.cache-hit != 'true'
+        run: composer require ${{ inputs.additionalRequirements }} --no-interaction
+
+      - name: Install Mautic
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
+        run: |
+          cp ./.github/ci-files/local.php ./config/local.php
+          php bin/console mautic:install --force http://localhost
+
+      - name: Install Plugins
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
+        run: php bin/console mautic:plugins:install --env=dev
+
+      - name: Copy required files
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           sparse-checkout: .github/custom_tests
           path: ciFiles
-          ref: mtc-11409-custom-tests
 
       - name: Run custom tests
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
         run: |
           find ciFiles/.github/custom_tests -type f -ipath 'ciFiles/.github/custom_tests/*.sh' -print0 | while IFS= read -r -d '' script; do
             bash "$script"
