@@ -23,6 +23,11 @@ on:
         required: true
         type: string
         description: "Key for Composer Cache"
+      additionalRequirements:
+        required: false
+        default: ''
+        type: string
+        description: 'Additional composer requirements'
     secrets:
       PERSONAL_ACCESS_TOKEN:
         required: false
@@ -106,11 +111,13 @@ jobs:
           path: |
             bin
             vendor
+            plugins/*
+            !${{ inputs.pluginDir }}
           key: ${{ inputs.composerCacheKey }}
 
       - name: Install Composer dependencies
         if: steps.cache-restore-composer.outputs.cache-hit != 'true'
-        run: composer install
+        run: composer install --no-interaction
 
       - name: Add plugin dependencies
         if: inputs.additionalRequirements != '' && steps.cache-restore-composer.outputs.cache-hit != 'true'

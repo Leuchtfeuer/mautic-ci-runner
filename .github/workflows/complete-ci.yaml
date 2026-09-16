@@ -217,6 +217,6 @@ jobs:
       phpVersion: ${{ matrix.phpVersion }}
       pluginDir: ${{ needs.determine-reqs.outputs.pluginDir }}
       composerCacheKey: ${{ needs.composer-install.outputs.composer-cache-key }}
+      additionalRequirements: ${{ inputs.additionalRequirements }}
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
