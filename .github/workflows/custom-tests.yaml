@@ -113,6 +113,7 @@ jobs:
             vendor
             plugins/*
             !${{ inputs.pluginDir }}
+            app/bundles/CoreBundle/Assets/pictograms
           key: ${{ inputs.composerCacheKey }}
 
       - name: Install Composer dependencies
