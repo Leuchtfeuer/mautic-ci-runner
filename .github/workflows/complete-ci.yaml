@@ -133,7 +133,7 @@ jobs:
   composer-install:
     name: Composer Install
     needs: [determine-reqs]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@MTC-11717_test-plugin-dependencies
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -149,7 +149,7 @@ jobs:
   static-tests:
     name: Static Tests
     needs: [determine-reqs, composer-install]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@MTC-11717_test-plugin-dependencies
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -170,7 +170,7 @@ jobs:
     name: Unit Tests
     needs: [determine-reqs,  composer-install ]
     if: ${{ needs.determine-reqs.outputs.UNIT == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@MTC-11717_test-plugin-dependencies
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -188,7 +188,7 @@ jobs:
     name: Functional Tests
     needs: [determine-reqs, composer-install]
     if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@MTC-11717_test-plugin-dependencies
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -207,7 +207,7 @@ jobs:
     name: Custom Tests
     needs: [ determine-reqs, composer-install ]
     if: ${{ needs.determine-reqs.outputs.CUSTOM_TESTS == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@MTC-11717_test-plugin-dependencies
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
