@@ -86,6 +86,7 @@ jobs:
             vendor
             plugins/*
             !${{ inputs.pluginDir }}
+            app/bundles/CoreBundle/Assets/pictograms
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
 
       - name: Setup PHP, with composer and extensions
@@ -119,4 +120,5 @@ jobs:
             vendor
             plugins/*
             !${{ inputs.pluginDir }}
+            app/bundles/CoreBundle/Assets/pictograms
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
