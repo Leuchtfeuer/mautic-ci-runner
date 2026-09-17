@@ -67,7 +67,11 @@ jobs:
 
       - name: Creates cache key depending on the composer files
         id: generate-composer-cache-key
-        run: echo "composer-cache-key=composer-${{ hashFiles('composer.lock') }}-${{ inputs.phpVersion }}-mautic${{ inputs.mauticVersion }}" >> "$GITHUB_OUTPUT"
+        env:
+          ADDITIONAL_REQUIREMENTS: ${{ inputs.additionalRequirements }}
+        run: |
+          requirements_hash=$(printf '%s' "$ADDITIONAL_REQUIREMENTS" | sha256sum | cut -d' ' -f1)
+          echo "composer-cache-key=composer-v4-${{ hashFiles('composer.lock', format('{0}/composer.json', inputs.pluginDir)) }}-${requirements_hash}-${{ inputs.phpVersion }}-mautic${{ inputs.mauticVersion }}" >> "$GITHUB_OUTPUT"
 
       - name: Get Composer Cache Directory
         id: generate-composer-cache-dir
@@ -80,6 +84,9 @@ jobs:
           path: |
             bin
             vendor
+            plugins/*
+            !${{ inputs.pluginDir }}
+            app/bundles/CoreBundle/Assets/pictograms
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
 
       - name: Setup PHP, with composer and extensions
@@ -111,4 +118,7 @@ jobs:
           path: |
             bin
             vendor
+            plugins/*
+            !${{ inputs.pluginDir }}
+            app/bundles/CoreBundle/Assets/pictograms
           key: ${{ steps.generate-composer-cache-key.outputs.composer-cache-key }}
