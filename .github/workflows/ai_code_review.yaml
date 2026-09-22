@@ -23,7 +23,10 @@ jobs:
     name: Check newest comment
     runs-on: ${{ inputs.runner }}
     if: ${{ github.event.issue.number }}
-    env: PR_NUMBER=${{ github.event.issue.number }}
+    env:
+      PR_NUMBER: ${{ github.event.issue.number }}
+      GH_TOKEN: ${{ github.token }}
+
     outputs:
       runReview: ${{ steps.getComment.outputs.runReview }}
     steps:

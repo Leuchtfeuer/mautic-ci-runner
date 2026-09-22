@@ -54,6 +54,8 @@ jobs:
   determine-reqs:
     name: Get requirements
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     outputs:
       UNIT: ${{ steps.directories.outputs.UNIT }}
       FUNCTIONAL: ${{ steps.directories.outputs.FUNCTIONAL }}
