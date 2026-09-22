@@ -15,10 +15,28 @@ on:
       ANTHROPIC_API_KEY:
         required: false
         description: 'The API Key for Anthropics API'
+  issue_comment:
+    types: [created]
 
 jobs:
+  check-comment:
+    name: Check newest comment
+    runs-on: ${{ inputs.runner }}
+    if: ${{ github.event.issue.number }}
+    env: PR_NUMBER=${{ github.event.issue.number }}
+    outputs:
+      runReview: ${{ steps.getComment.outputs.runReview }}
+    steps:
+      - id: getComment
+        run: |
+          prBody=$(gh pr view $PR_NUMBER --json comments | jq -r '.comments.[-1].body')
+          if [ $prBody == "AI REVIEW" ]; then runReview = 1; else runReview = 0;
+          echo "runReview=$runReview" >> $GITHUB_OUTPUT
+
   ai-code-review:
     name: Code review with claude.ai
+    if: ${{ !github.event.issue.number || needs.check-comment.outputs.runReview == 1 }}
+    needs: [check-comment]
     runs-on: ${{ inputs.runner }}
     permissions:
       contents: read
