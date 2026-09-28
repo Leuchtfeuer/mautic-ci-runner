@@ -97,11 +97,8 @@ jobs:
         id: mauticVersions
         run: |
           mauticMajorVersion=$(cat composer.json| jq -r '.require."mautic/core-lib"'  | grep -o "[0-9]" | head -1) # get Mautic Version from composer.json
-          echo "$mauticMajorVersion"
           echo "mauticVersions=$(grep ^$mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
-          echo $(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)
           echo "phpVersions=$(grep ^$mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
-          echo $(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)
       - name: Check for Custom Setup & Tests
         id: customSetupTests
         run: |
@@ -113,7 +110,7 @@ jobs:
           prNumber=$(gh search prs --json number --sort updated --limit 1 | jq -r '.[].number')
           prCreated=$(gh search prs --json createdAt --sort updated --limit 1 | jq -r '.[].createdAt')
           prUpdated=$(gh search prs --json updatedAt --sort updated --limit 1 | jq -r '.[].updatedAt')
-          if [[ "${prCreated}" < "${prUpdated}" ]]; then CREATED = 0; else CREATED  = 1; fi
+          if [[ "${prCreated}" < "${prUpdated}" ]]; then CREATED=0; else CREATED=1; fi
           echo "prNumber=$prNumber"  >> "$GITHUB_OUTPUT"
           echo "prCreated=$CREATED"  >> "$GITHUB_OUTPUT"
 
