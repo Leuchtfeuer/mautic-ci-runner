@@ -64,6 +64,7 @@ jobs:
       pluginDir: ${{ steps.pluginDir.outputs.pluginDir }}
       CUSTOM_SETUP: ${{ steps.customSetupTests.outputs.CUSTOM_SETUP }}
       CUSTOM_TESTS: ${{ steps.customSetupTests.outputs.CUSTOM_TESTS }}
+      PR_CREATED: ${{ steps.prStatus.outputs.PR_CREATED }}
     steps:
       - name: Checkout this plugin
         uses: actions/checkout@v6
@@ -110,8 +111,7 @@ jobs:
           prCreated=$(gh --repo ${{ github.repository }} search prs --json createdAt --sort updated --limit 1 | jq -r '.[].createdAt')
           prUpdated=$(gh --repo ${{ github.repository }} search prs --json updatedAt --sort updated --limit 1 | jq -r '.[].updatedAt')
           if [[ "${prCreated}" < "${prUpdated}" ]]; then CREATED=0; else CREATED=1; fi
-          echo "prCreated=$CREATED"  >> "$GITHUB_OUTPUT"
-          echo "Created? $CREATED"
+          echo "PR_CREATED=$CREATED"  >> "$GITHUB_OUTPUT"
 
   check-dod:
     name: Check DoD
