@@ -113,6 +113,8 @@ jobs:
           if [[ "${prCreated}" < "${prUpdated}" ]]; then CREATED=0; else CREATED=1; fi
           echo "prNumber=$prNumber"  >> "$GITHUB_OUTPUT"
           echo "prCreated=$CREATED"  >> "$GITHUB_OUTPUT"
+          echo "Created? $CREATED"
+          echo "prNumber? $prNumber"
 
   check-dod:
     name: Check DoD
