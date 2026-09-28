@@ -79,7 +79,7 @@ jobs:
           echo "MAUTIC_TABLE_PREFIX=mautic_" >> $GITHUB_ENV
 
       - name: Restore Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         id: cache-restore-composer
         with:
           path: |

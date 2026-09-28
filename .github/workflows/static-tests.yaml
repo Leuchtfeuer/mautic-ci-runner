@@ -82,7 +82,7 @@ jobs:
           coverage: pcov
 
       - name: Restore Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         id: cache-restore-composer
         with:
           path: |
