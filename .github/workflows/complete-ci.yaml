@@ -132,7 +132,7 @@ jobs:
 
   ai-code-review:
     name: AI Code Review
-    if: ${{ inputs.skipCodeReview == false && needs.determine-reqs.outputs.prCreated == 1 }}
+    if: ${{ inputs.skipCodeReview == false && needs.determine-reqs.outputs.PR_CREATED == 1 }}
     needs: [ determine-reqs ]
     permissions:
       contents: read
