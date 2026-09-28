@@ -107,7 +107,7 @@ jobs:
       - name: Determine PR status
         id: prStatus
         run: |
-          echo $(gh search prs --json )
+          echo $(gh search prs)
           prNumber=$(gh search prs --json number --sort updated --limit 1 | jq -r '.[].number')
           prCreated=$(gh search prs --json createdAt --sort updated --limit 1 | jq -r '.[].createdAt')
           prUpdated=$(gh search prs --json updatedAt --sort updated --limit 1 | jq -r '.[].updatedAt')
