@@ -108,9 +108,9 @@ jobs:
         id: prStatus
         run: |
           echo $(gh search prs)
-          prNumber=$(gh search prs --json number --sort updated --limit 1 | jq -r '.[].number')
-          prCreated=$(gh search prs --json createdAt --sort updated --limit 1 | jq -r '.[].createdAt')
-          prUpdated=$(gh search prs --json updatedAt --sort updated --limit 1 | jq -r '.[].updatedAt')
+          prNumber=$(gh --repo ${{ github.repository }} search prs --json number --sort updated --limit 1 | jq -r '.[].number')
+          prCreated=$(gh --repo ${{ github.repository }} search prs --json createdAt --sort updated --limit 1 | jq -r '.[].createdAt')
+          prUpdated=$(gh --repo ${{ github.repository }} search prs --json updatedAt --sort updated --limit 1 | jq -r '.[].updatedAt')
           if [[ "${prCreated}" < "${prUpdated}" ]]; then CREATED=0; else CREATED=1; fi
           echo "prNumber=$prNumber"  >> "$GITHUB_OUTPUT"
           echo "prCreated=$CREATED"  >> "$GITHUB_OUTPUT"
