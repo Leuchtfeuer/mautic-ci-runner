@@ -162,7 +162,7 @@ jobs:
   static-tests:
     name: Static Tests
     needs: [determine-reqs, composer-install]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@mtc-11957-mautic-72
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -201,7 +201,7 @@ jobs:
     name: Functional Tests
     needs: [determine-reqs, composer-install]
     if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-11957-mautic-72
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -220,7 +220,7 @@ jobs:
     name: Custom Tests
     needs: [ determine-reqs, composer-install ]
     if: ${{ needs.determine-reqs.outputs.CUSTOM_TESTS == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@mtc-11957-mautic-72
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
