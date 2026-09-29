@@ -110,8 +110,8 @@ jobs:
           if [ -e ${{ inputs.pluginDir }}/phpstan.neon ]; then
             cp ${{ inputs.pluginDir }}/phpstan.neon .
             sed -i 's|vendor/mautic/core-lib|app|g' phpstan.neon
+          else
             sed -i 's|#reportUnmatchedIgnoredErrors|reportUnmatchedIgnoredErrors|g' phpstan.neon
-            cat phpstan.neon
           fi
 
       - name: PHPSTAN
