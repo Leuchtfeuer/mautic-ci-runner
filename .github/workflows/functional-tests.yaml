@@ -82,6 +82,7 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: ciFiles
           path: ciFiles
+          ref: mtc-11957-mautic-72
 
       - name: Copy phpunit.xml
         run: |
@@ -142,6 +143,13 @@ jobs:
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: php bin/console mautic:plugins:install --env=dev
+
+      - name: Generate Assets
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
+        run: |
+          npm install
+          php bin/console mautic:assets:generate --env=dev
 
       - name: Custom Setup for Tests (1/2)
         uses: actions/checkout@v4
