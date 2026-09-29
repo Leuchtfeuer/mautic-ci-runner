@@ -82,6 +82,7 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: ciFiles
           path: ciFiles
+          ref: mtc-11957-mautic-72
 
       - name: Copy phpunit.xml
         run: |
