@@ -29,7 +29,7 @@
         <ini name="error_reporting" value="E_ALL" />
     </php>
 
-    <coverage>
+    <source>
         <include>
             <directory>*</directory>
         </include>
@@ -41,7 +41,7 @@
             <directory>Views</directory>
             <directory>vendor</directory>
         </exclude>
-    </coverage>
+    </source>
 
     <listeners>
         <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener"/>
