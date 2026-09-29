@@ -42,9 +42,4 @@
         </exclude>
     </source>
 
-    <extensions>
-        <bootstrap class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener"/>
-        <bootstrap class="\Mautic\CoreBundle\Test\Listeners\CleanupListener"/>
-    </extensions>
-
 </phpunit>
