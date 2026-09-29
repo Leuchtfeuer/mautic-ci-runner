@@ -8,9 +8,6 @@
          stopOnFailure="false">
 
     <testsuites>
-        <testsuite name="all">
-            <directory>Tests</directory>
-        </testsuite>
         <testsuite name="unit">
             <directory>Tests/Unit</directory>
         </testsuite>
