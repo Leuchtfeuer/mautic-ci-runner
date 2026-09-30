@@ -75,15 +75,15 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: globalSettings
           path: globalSettings
+          ref: mtc-11935-less-cr
       - name: Checkout required ci files (2/2)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           sparse-checkout: |
             .github/custom_setup
             .github/custom_tests
           path: ciFiles
-          ref: mtc-11935-less-cr
 
       - name: Get Plugin Directory
         id: pluginDir
