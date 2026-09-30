@@ -82,8 +82,14 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: ciFiles
           path: ciFiles
+          ref: mtc-11935-less-cr
+
+      - name: Copy phpunit.xml (Mautic 5) #this part is required for compatibility and can be removed once M5 is obsolete
+        if: ${{ startsWith(inputs.mauticVersion,5) }}
+        run: cp -u ciFiles/ciFiles/phpunit_5.xml ${{ inputs.pluginDir }}/phpunit.xml
 
       - name: Copy phpunit.xml
+        if: ${{ startsWith(inputs.mauticVersion,7) }}
         run: |
           if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
 
@@ -112,7 +118,7 @@ jobs:
           echo "MAUTIC_ENV=test" >> $GITHUB_ENV
 
       - name: Restore Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         id: cache-restore-composer
         with:
           path: |
@@ -142,6 +148,13 @@ jobs:
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: php bin/console mautic:plugins:install --env=dev
+
+      - name: Generate Assets
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
+        run: |
+          npm install
+          php bin/console mautic:assets:generate --env=dev
 
       - name: Custom Setup for Tests (1/2)
         uses: actions/checkout@v4

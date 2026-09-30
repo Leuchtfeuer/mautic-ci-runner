@@ -54,6 +54,8 @@ jobs:
   determine-reqs:
     name: Get requirements
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     outputs:
       UNIT: ${{ steps.directories.outputs.UNIT }}
       FUNCTIONAL: ${{ steps.directories.outputs.FUNCTIONAL }}
@@ -62,6 +64,7 @@ jobs:
       pluginDir: ${{ steps.pluginDir.outputs.pluginDir }}
       CUSTOM_SETUP: ${{ steps.customSetupTests.outputs.CUSTOM_SETUP }}
       CUSTOM_TESTS: ${{ steps.customSetupTests.outputs.CUSTOM_TESTS }}
+      PR_CREATED: ${{ steps.prStatus.outputs.PR_CREATED }}
     steps:
       - name: Checkout this plugin
         uses: actions/checkout@v6
@@ -72,8 +75,9 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: globalSettings
           path: globalSettings
+          ref: mtc-11935-less-cr
       - name: Checkout required ci files (2/2)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           sparse-checkout: |
@@ -95,14 +99,20 @@ jobs:
         id: mauticVersions
         run: |
           mauticMajorVersion=$(cat composer.json| jq -r '.require."mautic/core-lib"'  | grep -o "[0-9]" | head -1) # get Mautic Version from composer.json
-          echo "$mauticMajorVersion"
-          echo "mauticVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
-          echo "phpVersions=$(grep $mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
+          echo "mauticVersions=$(grep ^$mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f2)" >> "$GITHUB_OUTPUT"
+          echo "phpVersions=$(grep ^$mauticMajorVersion globalSettings/globalSettings/versionRequirements.csv | cut -d';' -f3)" >> "$GITHUB_OUTPUT"
       - name: Check for Custom Setup & Tests
         id: customSetupTests
         run: |
           if [ -n "$(find ciFiles/.github/custom_setup -maxdepth 1 -name '*.sh' 2>/dev/null)" ]; then echo "CUSTOM_SETUP=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_SETUP=0" >> "$GITHUB_OUTPUT"; fi
           if [ -n "$(find ciFiles/.github/custom_tests -maxdepth 1 -name '*.sh' 2>/dev/null)" ]; then echo "CUSTOM_TESTS=1" >> "$GITHUB_OUTPUT"; else echo "CUSTOM_TESTS=0" >> "$GITHUB_OUTPUT"; fi
+      - name: Determine PR status
+        id: prStatus
+        run: |
+          prCreated=$(gh --repo ${{ github.repository }} search prs --json createdAt --sort updated --limit 1 | jq -r '.[].createdAt')
+          prUpdated=$(gh --repo ${{ github.repository }} search prs --json updatedAt --sort updated --limit 1 | jq -r '.[].updatedAt')
+          if [[ "${prCreated}" < "${prUpdated}" ]]; then CREATED=0; else CREATED=1; fi
+          echo "PR_CREATED=$CREATED"  >> "$GITHUB_OUTPUT"
 
   check-dod:
     name: Check DoD
@@ -123,9 +133,13 @@ jobs:
 
   ai-code-review:
     name: AI Code Review
-    if: ${{ inputs.skipCodeReview == false }}
+    if: ${{ inputs.skipCodeReview == false && needs.determine-reqs.outputs.PR_CREATED == 1 }}
     needs: [ determine-reqs ]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@main
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@mtc-11935-less-cr
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -149,7 +163,7 @@ jobs:
   static-tests:
     name: Static Tests
     needs: [determine-reqs, composer-install]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@mtc-11935-less-cr
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -170,7 +184,7 @@ jobs:
     name: Unit Tests
     needs: [determine-reqs,  composer-install ]
     if: ${{ needs.determine-reqs.outputs.UNIT == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@mtc-11935-less-cr
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -188,7 +202,7 @@ jobs:
     name: Functional Tests
     needs: [determine-reqs, composer-install]
     if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@mtc-11935-less-cr
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -207,7 +221,7 @@ jobs:
     name: Custom Tests
     needs: [ determine-reqs, composer-install ]
     if: ${{ needs.determine-reqs.outputs.CUSTOM_TESTS == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@mtc-11935-less-cr
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
