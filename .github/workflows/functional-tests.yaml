@@ -82,9 +82,14 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: ciFiles
           path: ciFiles
-          ref: mtc-11957-mautic-72
+          ref: mtc-11935-less-cr
+
+      - name: Copy phpunit.xml (Mautic 5) #this part is required for compatibility and can be removed once M5 is obsolete
+        if: ${{ startsWith(inputs.mauticVersion,5) }}
+        run: cp -u ciFiles/ciFiles/phpunit_5.xml ${{ inputs.pluginDir }}/phpunit.xml
 
       - name: Copy phpunit.xml
+        if: ${{ startsWith(inputs.mauticVersion,7) }}
         run: |
           if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
 
