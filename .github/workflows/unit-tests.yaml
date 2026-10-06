@@ -62,7 +62,11 @@ jobs:
           path: ciFiles
 
       - name: Copy phpunit.xml
-        run: cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}
+        run: |
+          # Keep a plugin-provided PHPUnit 10+ config; only seed defaults when missing.
+          if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "${{ inputs.pluginDir }}/phpunit.xml" ]; then
+            cp ciFiles/ciFiles/phpunit.xml "${{ inputs.pluginDir }}/phpunit.xml"
+          fi
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
