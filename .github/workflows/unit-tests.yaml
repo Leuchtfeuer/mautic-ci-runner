@@ -60,7 +60,7 @@ jobs:
           repository: Leuchtfeuer/mautic-ci-runner
           sparse-checkout: ciFiles
           path: ciFiles
-          ref: mtc-11935-less-cr
+          #ref: mtc-11935-less-cr
 
       - name: Copy phpunit.xml (Mautic 5) #this part is required for compatibility and can be removed once M5 is obsolete
         if: ${{ startsWith(inputs.mauticVersion,5) }}
