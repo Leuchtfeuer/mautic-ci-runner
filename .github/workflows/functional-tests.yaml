@@ -91,7 +91,11 @@ jobs:
       - name: Copy phpunit.xml
         if: ${{ startsWith(inputs.mauticVersion,7) }}
         run: |
-          if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "phpunit.xml" ]; then cp -u ciFiles/ciFiles/phpunit.xml ${{ inputs.pluginDir }}; fi
+          # Keep a plugin-provided PHPUnit 10+ config; only seed defaults when missing.
+          # (Previously checked repo-root phpunit.xml, which Mautic never has.)
+          if [ -f "ciFiles/ciFiles/phpunit.xml" ] && [ ! -f "${{ inputs.pluginDir }}/phpunit.xml" ]; then
+            cp ciFiles/ciFiles/phpunit.xml "${{ inputs.pluginDir }}/phpunit.xml"
+          fi
 
       - name: Ensure test directories exist
         run: |
