@@ -105,7 +105,7 @@ jobs:
           echo "MAUTIC_ENV=test" >> $GITHUB_ENV
 
       - name: Restore Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         id: cache-restore-composer
         with:
           path: |
@@ -135,6 +135,13 @@ jobs:
         env:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: php bin/console mautic:plugins:install --env=dev
+
+      - name: Generate Assets
+        env:
+          DB_PORT: ${{ job.services.database.ports[3306] }}
+        run: |
+          npm install
+          php bin/console mautic:assets:generate --env=dev
 
       - name: Copy required files
         uses: actions/checkout@v6
