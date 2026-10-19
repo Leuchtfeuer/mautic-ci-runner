@@ -152,7 +152,8 @@ jobs:
         run: |
           composer install --no-interaction --no-scripts
           if [ -n "$ADDITIONAL_REPOSITORIES" ]; then
-            jq -c 'to_entries[]' <<< "$ADDITIONAL_REPOSITORIES" | while read -r entry; do
+            # Composer prepends repositories, so insert in reverse to preserve priority.
+            jq -c 'to_entries | reverse[]' <<< "$ADDITIONAL_REPOSITORIES" | while read -r entry; do
               composer config --no-interaction "repositories.additional-$(jq -r '.key' <<< "$entry")" "$(jq -c '.value' <<< "$entry")"
             done
           fi
