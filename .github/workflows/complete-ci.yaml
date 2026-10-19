@@ -144,7 +144,7 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@MTC-11964_private-plugin-dependencies
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/ai_code_review.yaml@main
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -152,7 +152,7 @@ jobs:
   composer-install:
     name: Composer Install
     needs: [determine-reqs]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@MTC-11964_private-plugin-dependencies
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/composer-install.yaml@main
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -169,7 +169,7 @@ jobs:
   static-tests:
     name: Static Tests
     needs: [determine-reqs, composer-install]
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@MTC-11964_private-plugin-dependencies
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/static-tests.yaml@main
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -191,7 +191,7 @@ jobs:
     name: Unit Tests
     needs: [determine-reqs,  composer-install ]
     if: ${{ needs.determine-reqs.outputs.UNIT == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@MTC-11964_private-plugin-dependencies
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/unit-tests.yaml@main
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -210,7 +210,7 @@ jobs:
     name: Functional Tests
     needs: [determine-reqs, composer-install]
     if: ${{ needs.determine-reqs.outputs.FUNCTIONAL == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@MTC-11964_private-plugin-dependencies
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/functional-tests.yaml@main
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
@@ -230,7 +230,7 @@ jobs:
     name: Custom Tests
     needs: [ determine-reqs, composer-install ]
     if: ${{ needs.determine-reqs.outputs.CUSTOM_TESTS == 1 }}
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@MTC-11964_private-plugin-dependencies
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/custom-tests.yaml@main
     strategy:
       matrix:
         mauticVersion: ${{ fromJSON(needs.determine-reqs.outputs.mauticVersions) }}
