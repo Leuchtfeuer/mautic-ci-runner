@@ -24,6 +24,11 @@ on:
         default: ''
         type: string
         description: 'Additional composer requirements'
+      additionalRepositories:
+        required: false
+        default: ''
+        type: string
+        description: 'Additional composer repositories as a JSON array, e.g. [{"type":"vcs","url":"https://github.com/org/repo"}]'
       composerCacheKey:
         required: true
         type: string
@@ -105,6 +110,8 @@ jobs:
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
+          # The PAT lets Composer read private repositories from additionalRepositories
+          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN || github.token }}
           php-version: ${{ inputs.phpVersion }}
           ini-values: -dpcov.enabled=0, pcov.directory=."
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
@@ -134,12 +141,23 @@ jobs:
           key: ${{ inputs.composerCacheKey }}
 
       - name: Install Composer dependencies
-        if: steps.cache-restore-composer.outputs.cache-hit != 'true'
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true' && inputs.additionalRequirements == ''
         run: composer install --no-interaction
 
-      - name: Add plugin dependencies
-        if: inputs.additionalRequirements != '' && steps.cache-restore-composer.outputs.cache-hit != 'true'
-        run: composer require ${{ inputs.additionalRequirements }} --no-interaction
+      # Composer scripts boot Mautic with the tested plugin, so its dependencies must be installed first
+      - name: Install Composer dependencies with plugin dependencies
+        if: steps.cache-restore-composer.outputs.cache-hit != 'true' && inputs.additionalRequirements != ''
+        env:
+          ADDITIONAL_REPOSITORIES: ${{ inputs.additionalRepositories }}
+        run: |
+          composer install --no-interaction --no-scripts
+          if [ -n "$ADDITIONAL_REPOSITORIES" ]; then
+            # Composer prepends repositories, so insert in reverse to preserve priority.
+            jq -c 'to_entries | reverse[]' <<< "$ADDITIONAL_REPOSITORIES" | while read -r entry; do
+              composer config --no-interaction "repositories.additional-$(jq -r '.key' <<< "$entry")" "$(jq -c '.value' <<< "$entry")"
+            done
+          fi
+          composer require ${{ inputs.additionalRequirements }} --no-interaction
 
       - name: Install Mautic
         env:
